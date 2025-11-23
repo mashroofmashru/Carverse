@@ -13,3 +13,39 @@
 .animate-blob {
   animation: blob 7s infinite;
 }
+
+.font-inter {
+    font-family: 'Inter', sans-serif;
+}
+
+.text-primary {
+    color: #2563eb;
+}
+
+.bg-primary {
+    background-color: #2563eb;
+}
+
+.hover\\:bg-primary-dark:hover {
+    background-color: #1d4ed8;
+}
+
+@media (max-width: 1023px) {
+    #filter-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 40;
+    }
+
+    #filter-sidebar.open {
+        transform: translateX(0);
+    }
+
+    #sidebar-overlay {
+        display: none;
+    }
+
+    #filter-sidebar.open+#sidebar-overlay {
+        display: block;
+    }
+}

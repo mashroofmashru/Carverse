@@ -3,9 +3,9 @@ import React from 'react';
 const Navbar = () => {
   // A simple way to handle navigation links data
   const navLinks = [
-    { name: 'Home', href: '/user', isPrimary: true },
-    { name: 'Inventory', href: '/user/viewallinventory.html', isPrimary: false },
-    { name: 'Contact', href: '/user/contact.html', isPrimary: false },
+    { name: 'Home', href: '/', isPrimary: true },
+    { name: 'Inventory', href: '/viewinventory', isPrimary: false },
+    { name: 'Contact', href: '/contact', isPrimary: false },
   ];
 
   return (

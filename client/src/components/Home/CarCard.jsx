@@ -1,12 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const CarCard = ({ car }) => {
   const { title, details, dealer, price, imgUrl, tag, tagColor } = car;
-
+  const navigate =useNavigate();
   return (
     <div 
       className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition duration-300 overflow-hidden border border-gray-100 cursor-pointer" 
-      onClick={() => window.location.href='/user/details.html'}
+      onClick={()=>navigate('/details')}
     >
       <div className="relative h-56 bg-gray-200">
         {tag && (

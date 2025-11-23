@@ -1,6 +1,6 @@
 import React from 'react';
 import CarCard from '../CarCard';
-
+import { useNavigate } from 'react-router-dom';
 const featuredCars = [
   {
     title: 'Mercedes-Benz C-Class',
@@ -32,6 +32,7 @@ const featuredCars = [
 ];
 
 const InventorySection = () => {
+   const navigate = useNavigate();
   return (
     <section className="py-16 bg-slate-50">
       <div className="container mx-auto px-6">
@@ -49,7 +50,7 @@ const InventorySection = () => {
         <div className="mt-12 text-center">
           <button 
             className="px-8 py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-700 transition shadow-lg" 
-            onClick={() => window.location.href='/user/viewallinventory.html'}
+            onClick={()=>navigate('/viewInverntory')}
           >
             View All Inventory
           </button>
