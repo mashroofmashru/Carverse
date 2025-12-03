@@ -13,7 +13,7 @@ const Navbar = () => {
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <i className="fa-solid fa-car-side text-2xl text-blue-600"></i>
-          <span className="text-xl font-bold tracking-tight text-gray-900">CarVerse</span>
+          <span className="text-xl font-bold tracking-tight text-gray-900">AutoNext</span>
         </div>
         
         <div className="hidden md:flex space-x-8 font-medium text-gray-600">

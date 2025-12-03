@@ -28,7 +28,7 @@ const Footer = () => {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <i className="fa-solid fa-car-side text-2xl text-primary"></i>
-              <span className="text-xl font-bold text-gray-900">CarVerse</span>
+              <span className="text-xl font-bold text-gray-900">AutoNext</span>
             </div>
             <p className="text-gray-500 text-sm">The most trusted platform to buy cars directly from authorized dealers. Transparent pricing, verified inventory.</p>
           </div>
@@ -60,7 +60,7 @@ const Footer = () => {
         
         {/* Copyright */}
         <div className="border-t border-gray-200 pt-8 text-center text-sm text-gray-500">
-          &copy; 2025 CarVerse. All rights reserved.
+          &copy; 2025 AutoNext. All rights reserved.
         </div>
       </div>
     </footer>

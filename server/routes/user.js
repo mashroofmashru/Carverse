@@ -2,6 +2,6 @@ var express = require('express');
 var router = express.Router();
 
 router.get('/',(req,res)=>{
-  res.json({ message: "Hello from server user side!" });
+  console.log("Hello form user");
 })
 module.exports = router;

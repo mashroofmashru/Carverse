@@ -1,4 +1,3 @@
-// src/App.jsx
 import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import './App.css'
@@ -8,6 +7,8 @@ import Details from './pages/Details'
 import InventoryPage from './pages/Inventory'
 import ContactPage from './pages/Contact'
 import DealerDashboard from './pages/DealerDashBoard'
+import LoginPage from './pages/Login'
+import SignupPage from './pages/Signup'
 function App() {
   const [count, setCount] = useState(0)
 
@@ -19,6 +20,8 @@ function App() {
         <Route path="/viewInventory" element={<InventoryPage/>} />
         <Route path="/contact" element={<ContactPage/>}/>
         <Route path='/dealer' element={<DealerDashboard/>}/>
+        <Route path='/login' element={<LoginPage/>}/>
+        <Route path='/signup' element={<SignupPage/>}/>
       </Routes>
     </>
   )
