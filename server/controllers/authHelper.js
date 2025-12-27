@@ -25,7 +25,18 @@ module.exports = {
                 },
             });
         } catch (err) {
-            console.log("Error occured during signup:"+err)
+            if (err.code === 11000) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Email already registered",
+                });
+            }
+
+            res.status(500).json({
+                success: false,
+                message: "Internal server error",
+            });
+            console.log("Error occured during signup:" + err)
         }
     },
 };

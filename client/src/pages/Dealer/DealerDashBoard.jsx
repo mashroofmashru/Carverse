@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-  Menu,
   Car,
-  LayoutDashboard,
   Users2,
-  BarChart3,
-  Settings,
-  LogOut,
-  Bell,
   DollarSign,
   PlusCircle,
   Plus,
@@ -17,9 +11,11 @@ import {
   CheckCircle,
   Mail,
 } from "lucide-react";
-
+import Header from "../../components/DealerComponents/Header";
+import SideBar from "../../components/DealerComponents/SideBar";
+import AddCarForm from "../../components/Details/AddCarForm";
 const DealerDashboard = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [ShowAddVehicleform,setShowAddVehicleform]=useState(false)
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
@@ -45,128 +41,10 @@ const DealerDashboard = () => {
       `}</style>
 
       <div className="bg-gray-50 font-inter min-h-screen flex flex-col">
-        {/* Header / Top Navigation */}
-        <header className="bg-white shadow-md sticky top-0 z-40">
-          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Logo & Title */}
-              <div className="flex items-center">
-                <button
-                  className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 mr-3 transition"
-                  onClick={toggleSidebar}
-                  aria-label="Toggle sidebar"
-                >
-                  <Menu className="w-6 h-6" />
-                </button>
-                <div className="flex items-center gap-2">
-                  <Car className="text-primary w-6 h-6" />
-                  <span className="text-xl font-bold tracking-tight text-gray-900">
-                    Dealer Portal
-                  </span>
-                </div>
-              </div>
-
-              {/* Right Side: User & Notifications */}
-              <div className="flex items-center space-x-4">
-                <button className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition">
-                  <Bell className="w-5 h-5" />
-                </button>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-gray-700 hidden sm:inline">
-                    Acme Motors
-                  </span>
-                  <div className="w-10 h-10 bg-primary/20 flex items-center justify-center rounded-full border border-primary/50 text-primary font-semibold">
-                    AM
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Layout Container */}
+        <Header/>
         <div id="dashboard-layout" className="flex min-h-[calc(100vh-4rem)]">
-          {/* Sidebar Navigation */}
-          {/* Overlay for mobile */}
-          {isSidebarOpen && (
-            <div
-              className="fixed inset-0 bg-black/30 z-40 lg:hidden"
-              onClick={toggleSidebar}
-            />
-          )}
-
-          <aside
-            id="sidebar"
-            className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-100 p-4 transition-transform duration-300 shadow-xl lg:shadow-none z-50
-            ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-            lg:relative lg:translate-x-0`}
-          >
-            <nav className="space-y-2 pt-4">
-              <h3 className="text-xs font-semibold uppercase text-gray-400 mb-4 px-3">
-                Main
-              </h3>
-
-              {/* Dashboard Link (Active) */}
-              <a
-                href="/dealer/home.html"
-                className="flex items-center px-3 py-3 text-sm font-semibold text-white bg-primary rounded-xl shadow-md transition duration-150"
-              >
-                <LayoutDashboard className="w-5 h-5 mr-3" />
-                Dashboard
-              </a>
-
-              {/* Inventory Link */}
-              <a
-                href="/dealer/inventory.html"
-                className="flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl transition duration-150"
-              >
-                <Car className="w-5 h-5 mr-3 text-gray-500" />
-                Inventory
-              </a>
-
-              {/* Leads Link */}
-              <a
-                href="/dealer/sales.html"
-                className="flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl transition duration-150"
-              >
-                <Users2 className="w-5 h-5 mr-3 text-gray-500" />
-                Sales Leads
-              </a>
-
-              {/* Reports Link */}
-              <a
-                href="/dealer/analysis.html"
-                className="flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl transition duration-150"
-              >
-                <BarChart3 className="w-5 h-5 mr-3 text-gray-500" />
-                Reports &amp; Analytics
-              </a>
-
-              <h3 className="text-xs font-semibold uppercase text-gray-400 pt-6 mb-4 px-3">
-                Tools
-              </h3>
-
-              {/* Settings Link */}
-              <a
-                href="/dealer/settings.html"
-                className="flex items-center px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl transition duration-150"
-              >
-                <Settings className="w-5 h-5 mr-3 text-gray-500" />
-                Settings
-              </a>
-
-              {/* Sign Out Link */}
-              <a
-                href="#"
-                className="flex items-center px-3 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition duration-150"
-              >
-                <LogOut className="w-5 h-5 mr-3 text-red-500" />
-                Sign Out
-              </a>
-            </nav>
-          </aside>
-
-          {/* Main Content Area */}
+          <SideBar/>
+          
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
             <h1 className="text-3xl font-extrabold text-gray-900 mb-6">
               Welcome Back, Acme Motors!
@@ -175,9 +53,8 @@ const DealerDashboard = () => {
               Here is a snapshot of your dealership performance and key tasks.
             </p>
 
-            {/* KPI Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-              {/* KPI Card 1: Total Inventory */}
+
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">
@@ -318,9 +195,9 @@ const DealerDashboard = () => {
                     Quick Actions
                   </h2>
                   <div className="space-y-3">
-                    <button className="w-full flex items-center justify-center py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition shadow-md shadow-blue-200/50">
+                    <button onClick={()=>setShowAddVehicleform(true)} className="w-full flex items-center justify-center py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition shadow-md shadow-blue-200/50">
                       <Plus className="w-5 h-5 mr-2" />
-                      Add New Vehicle
+                      Add New Vehicle{ShowAddVehicleform}
                     </button>
                     <button className="w-full flex items-center justify-center py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">
                       <PhoneCall className="w-5 h-5 mr-2" />
@@ -364,6 +241,7 @@ const DealerDashboard = () => {
           </main>
         </div>
       </div>
+      {ShowAddVehicleform&&(<AddCarForm onClose={() => setShowAddVehicleform(false)}/>)}
     </>
   );
 };

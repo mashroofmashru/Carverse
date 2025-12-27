@@ -6,7 +6,7 @@ import Home from './pages/Home'
 import Details from './pages/Details'
 import InventoryPage from './pages/Inventory'
 import ContactPage from './pages/Contact'
-import DealerDashboard from './pages/DealerDashBoard'
+import DealerDashboard from './pages/Dealer/DealerDashBoard'
 import LoginPage from './pages/Login'
 import SignupPage from './pages/Signup'
 function App() {

@@ -3,9 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { Car } from "lucide-react";
 import api from '../config/server'
 import { useState } from "react";
+import { useAuth } from '../../src/context/AuthContext';
 
-const SignupPage = () => {
-    const navigate=useNavigate();
+function SignupPage() {
+    const navigate = useNavigate();
+    const { login } = useAuth();
 
     // For form inputs
     const [Name, setName] = useState("");
@@ -17,23 +19,30 @@ const SignupPage = () => {
     // function for handle submit
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMsg("");
 
         try {
-            if(Password!=ConfPassword){
-                "Passwords do not match"
+            if (Password !== ConfPassword) {
+                throw new Error("Passwords do not match");
             }
+
             const res = await api.post("/auth/signup", {
                 Name,
                 Email,
                 Password,
             });
-            console.log("res:", res.data);
 
+            console.log("Signup response:", res.data);
+
+            // if backend returns user object
+            if (res.data.success) {
+                login(res.data.data);
+                navigate("/");
+            }
         } catch (err) {
-            console.error("Signup error:", err.response?.data || err.message);
-        }
-        if(res.status==true){
-            <navigate to=""/>
+            setErrorMsg(
+                err.response?.data?.message || "Signup failed"
+            );
         }
     };
 
@@ -69,8 +78,7 @@ const SignupPage = () => {
                             autoComplete="Name"
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200 shadow-sm"
                             placeholder="youreName"
-                            onChange={(e) => setName(e.target.value)}
-                        />
+                            onChange={(e) => setName(e.target.value)} />
                     </div>
                     {/* Email */}
                     <div>
@@ -87,8 +95,7 @@ const SignupPage = () => {
                             autoComplete="email"
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200 shadow-sm"
                             placeholder="you@example.com"
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
+                            onChange={(e) => setEmail(e.target.value)} />
                     </div>
 
                     {/* Password */}
@@ -106,8 +113,7 @@ const SignupPage = () => {
                             autoComplete="new-password"
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200 shadow-sm"
                             placeholder="••••••••"
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
+                            onChange={(e) => setPassword(e.target.value)} />
                     </div>
 
                     {/* Confirm Password */}
@@ -125,8 +131,7 @@ const SignupPage = () => {
                             autoComplete="new-password"
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200 shadow-sm"
                             placeholder="••••••••"
-                            onChange={(e) => setConfPassword(e.target.value)}
-                        />
+                            onChange={(e) => setConfPassword(e.target.value)} />
                         {ErrorMasg && <p className="text-red-700">{ErrorMasg}</p>}
                     </div>
 
@@ -152,6 +157,6 @@ const SignupPage = () => {
             </div>
         </div>
     );
-};
+}
 
 export default SignupPage;
