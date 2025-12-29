@@ -2,7 +2,7 @@ import React from 'react';
 
 /**
  * Reusable component for displaying a single vehicle card.
- * @param {object} car - The car data object { name, model, price, src }
+ * @param {object} car 
  */
 const CarCard = ({ car }) => {
     return (

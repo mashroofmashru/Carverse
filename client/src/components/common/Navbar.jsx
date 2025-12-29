@@ -17,7 +17,6 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     setOpenMenu(false);
-    navigate("/login");
   };
 
   return (
@@ -51,7 +50,7 @@ const Navbar = () => {
             <i className="fa-solid fa-magnifying-glass"></i>
           </button>
 
-          {/* ❌ Not logged in */}
+          {/* if Not logged in */}
           {!user && (
             <button
               onClick={() => navigate("/login")}
@@ -61,7 +60,7 @@ const Navbar = () => {
             </button>
           )}
 
-          {/* ✅ Logged in */}
+          {/* if Logged in */}
           {user && (
             <div className="relative">
               {/* Avatar */}

@@ -2,18 +2,19 @@ import React, { useState } from "react";
 import { Plus, X, UploadCloud } from "lucide-react";
 import api from '../../config/server'
 const AddCarForm = ({ onClose }) => {
+    // const [email, setEmail] = useState()
     const [title, setTitle] = useState("");
     const [brand, setBrand] = useState("");
     const [model, setModel] = useState("");
     const [year, setYear] = useState("");
     const [price, setPrice] = useState("");
     const [fuelType, setFuelType] = useState("PETROL");
+    const [category,setCategory]=useState("SEDAN")
     const [transmission, setTransmission] = useState("MANUAL");
     const [mileage, setMileage] = useState("");
     const [color, setColor] = useState("");
     const [description, setDescription] = useState("");
     const [images, setImages] = useState([]);
-
     const handleImageUpload = (e) => {
         setImages([...images, ...Array.from(e.target.files)]);
     };
@@ -23,13 +24,14 @@ const AddCarForm = ({ onClose }) => {
         e.preventDefault();
 
         const data = new FormData();
-
+        // data.append("email", email)
         data.append("title", title);
         data.append("brand", brand);
         data.append("model", model);
         data.append("year", year);
         data.append("price", price);
         data.append("fuelType", fuelType);
+        data.append("category", category)
         data.append("transmission", transmission);
         data.append("mileage", mileage);
         data.append("color", color);
@@ -64,7 +66,6 @@ const AddCarForm = ({ onClose }) => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input
-                            key=""
                             name="title"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
@@ -109,6 +110,8 @@ const AddCarForm = ({ onClose }) => {
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
                             placeholder="Price"
+                            min="100000"
+                            step="1000"
                             required
                             className="w-full rounded-lg border-gray-300 focus:outline-none focus:ring-0 focus:border-transparent"
                         />
@@ -124,8 +127,21 @@ const AddCarForm = ({ onClose }) => {
                             <option value="ELECTRIC">Electric</option>
                             <option value="HYBRID">Hybrid</option>
                         </select>
+                        <select
+                            name="category"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            className="w-full rounded-lg border-gray-300 focus:outline-none focus:ring-0 focus:border-transparent"
+                        >
+                            <option value="SUVs">SUVs</option>
+                            <option value="SEDAN">Sedan</option>
+                            <option value="HATCHBACK">Hatchback</option>
+                            <option value="ELECTRIC">Electric</option>
+                        </select>
+                        
+                    </div>
 
-
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <select
                             name="transmission"
                             value={transmission}
@@ -135,17 +151,13 @@ const AddCarForm = ({ onClose }) => {
                             <option value="MANUAL">Manual</option>
                             <option value="AUTOMATIC">Automatic</option>
                         </select>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input
                             type="number"
                             name="mileage"
                             value={mileage}
                             onChange={(e) => setMileage(e.target.value)}
                             placeholder="Mileage"
-                            min="100000"
-                            step="100"
+                            min="0"
                             required
                             className="w-full rounded-lg border-gray-300 focus:outline-none focus:ring-0 focus:border-transparent"
                         />

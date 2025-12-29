@@ -1,6 +1,29 @@
 const Car = require("../models/carSchema");
 
 module.exports = {
+  //create dealer profile-------------------------
+  createDealerProfile: async (req, res) => {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.role !== "dealer") {
+      return res.status(403).json({
+        message: "Only dealer accounts can create dealer profile",
+      });
+    }
+
+    const dealer = await Dealer.create({
+      user: user._id,
+      name: req.body.name,
+      phone: req.body.phone,
+    });
+
+    res.json({ success: true, dealer });
+  },
+
+  //addCar----------------------------
   addCar: async (req, res, next) => {
     try {
       console.log("TITLE:", req.body.title);
@@ -24,6 +47,7 @@ module.exports = {
         year: Number(req.body.year),
         price: Number(req.body.price),
         fuelType: req.body.fuelType,
+        category: req.body.category,
         transmission: req.body.transmission,
         mileage: Number(req.body.mileage),
         color: req.body.color,

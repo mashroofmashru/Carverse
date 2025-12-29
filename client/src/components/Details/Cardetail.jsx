@@ -22,21 +22,12 @@ const CAR_DETAILS = {
     ],
 };
 
-const SIMILAR_CARS = [
-    { name: 'BMW 3 Series', model: '330i xDrive', price: '$42,900', src: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=600&q=80' },
-    { name: 'Audi A4', model: '45 TFSI', price: '$44,200', src: 'https://images.unsplash.com/photo-1540066019607-e5f69323a8dc?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-    { name: 'Lexus ES', model: 'ES 350 F Sport', price: '$49,000', src: 'https://images.unsplash.com/photo-1577496549804-8b05f1f67338?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-];
-
 
 const CarDetailPage = () => {
-    // Gallery State Logic
     const [mainImage, setMainImage] = useState(CAR_DETAILS.thumbnails[0].src);
     const [activeThumbnailId, setActiveThumbnailId] = useState(CAR_DETAILS.thumbnails[0].id);
 
-    // Image change handler using React state
     const changeImage = (newSrc, id) => {
-        // Simple logic to set a higher-res image, similar to the original JS
         const newOptimizedSrc = newSrc.replace(/&w=\d+&/g, '&w=1200&');
         setMainImage(newOptimizedSrc);
         setActiveThumbnailId(id);
@@ -44,7 +35,6 @@ const CarDetailPage = () => {
 
     return (
         <>
-            {/* 2. Breadcrumbs */}
             <div className="bg-white border-b border-gray-200">
                 <div className="container mx-auto px-6 py-4">
                     <div className="flex items-center text-sm text-gray-500">
@@ -59,14 +49,11 @@ const CarDetailPage = () => {
                 </div>
             </div>
 
-            {/* 3. Main Content Area */}
             <main className="container mx-auto px-6 py-8">
                 <div className="flex flex-col lg:flex-row gap-10">
 
-                    {/* LEFT COLUMN: Gallery & Details (66%) */}
                     <div className="w-full lg:w-2/3">
 
-                        {/* Title Section (Mobile only) */}
                         <div className="lg:hidden mb-6">
                             <h1 className="text-3xl font-bold text-gray-900">{CAR_DETAILS.title}</h1>
                             <p className="text-gray-500 mt-1">{CAR_DETAILS.model}</p>
@@ -86,7 +73,6 @@ const CarDetailPage = () => {
                                 </span>
                             </div>
 
-                            {/* Thumbnails (Using .map for repetition) */}
                             <div className="grid grid-cols-4 gap-2">
                                 {CAR_DETAILS.thumbnails.map((thumb) => (
                                     <button
@@ -110,7 +96,7 @@ const CarDetailPage = () => {
                                 {CAR_DETAILS.specs.map((spec) => (
                                     <div key={spec.label} className="flex items-start gap-3">
                                         <div className="p-2 bg-blue-50 rounded-lg text-primary">
-                                            <spec.icon className="w-6 h-6" /> {/* Use the imported component */}
+                                            <spec.icon className="w-6 h-6" />
                                         </div>
                                         <div>
                                             <p className="text-xs text-gray-500 font-semibold uppercase">{spec.label}</p>
@@ -121,7 +107,6 @@ const CarDetailPage = () => {
                             </div>
                         </div>
 
-                        {/* Description */}
                         <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 mb-8">
                             <h2 className="text-xl font-bold text-gray-900 mb-4">Seller's Description</h2>
                             <div className="prose text-gray-600 leading-relaxed">
@@ -135,7 +120,7 @@ const CarDetailPage = () => {
                                     <li>11.9-inch central touchscreen multimedia display</li>
                                     <li>64-color ambient lighting</li>
                                     <li>Blind Spot Assist with Exit Warning Assist</li>
-                                    <li>Burmester® 3D Surround Sound System</li>
+                                    <li>Burmester 3D Surround Sound System</li>
                                 </ul>
                                 <p>Passed our rigorous 150-point inspection. Manufacturer warranty valid until 2028.</p>
                             </div>
@@ -209,20 +194,6 @@ const CarDetailPage = () => {
                     </div>
                 </div>
             </main>
-
-            {/* 4. Similar Cars Section (Moved to CarDetailPage since it's highly specific) */}
-            <section className="py-16 bg-white border-t border-gray-200">
-                <div className="container mx-auto px-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-8">Similar Vehicles</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                        {SIMILAR_CARS.map((car, index) => (
-                            <CarCard car={car}/>
-                        ))}
-
-                    </div>
-                </div>
-            </section>
         </>
     );
 };

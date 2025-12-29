@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext(null);
 
@@ -8,28 +9,36 @@ export const AuthProvider = ({ children }) => {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
+  const [token, setToken] = useState(() => {
+    return localStorage.getItem("auth_token");
+  });
+  const navigate=useNavigate()
   useEffect(() => {
-    if (user) {
+    if (user && token) {
       localStorage.setItem("auth_user", JSON.stringify(user));
-    } else {
-      localStorage.removeItem("auth_user");
-    }
-  }, [user]);
+      localStorage.setItem("auth_token", token);
+    } 
+  }, [user, token]);
 
-  const login = (userObj) => {
+  const login = (userObj, token) => {
     setUser(userObj);
-    console.log("Login success")
+    setToken(token);
+    alert("login success")
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem("auth_user");
+    localStorage.removeItem("auth_token");
+    navigate("/login");
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
+        token,
+        isAuthenticated: !!user && !!token,
         login,
         logout,
       }}

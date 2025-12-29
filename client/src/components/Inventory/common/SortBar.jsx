@@ -1,4 +1,3 @@
-// src/components/common/SortBar.jsx
 import React from "react";
 
 const SortBar = ({ totalCount }) => (

@@ -1,10 +1,12 @@
 import React from 'react'
-import {
-  Menu,
-  Car,
-  Bell,
-} from "lucide-react";
+import { Menu,Car,Bell} from "lucide-react";
+import { useAuth } from "../../context/authContext";
+import { useNavigate } from 'react-router-dom';
+
 function Header() {
+    const {user} = useAuth();
+    console.log(user)
+    const navigate = useNavigate()
     const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   return (
     <div>
@@ -34,11 +36,11 @@ function Header() {
                   <Bell className="w-5 h-5" />
                 </button>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-gray-700 hidden sm:inline">
-                    Acme Motors
+                  <span className="text-sm font-medium text-gray-700 hidden sm:inline" onClick={()=>navigate(`/dealer/profile/${user.id}`)}>
+                    {user&&user.Name}
                   </span>
                   <div className="w-10 h-10 bg-primary/20 flex items-center justify-center rounded-full border border-primary/50 text-primary font-semibold">
-                    AM
+                    {user?.Name?.charAt(0) || "U"}
                   </div>
                 </div>
               </div>

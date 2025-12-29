@@ -38,6 +38,12 @@ const carSchema = new mongoose.Schema(
       default: "PETROL",
     },
 
+    category: {
+      type: String,
+      enum: ["SUVs", "SEDAN", "HATCHBACK", "ELECTRIC"],
+      default: "",
+    },
+
     transmission: {
       type: String,
       enum: ["MANUAL", "AUTOMATIC"],

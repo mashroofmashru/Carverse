@@ -16,19 +16,6 @@ import SideBar from "../../components/DealerComponents/SideBar";
 import AddCarForm from "../../components/Details/AddCarForm";
 const DealerDashboard = () => {
   const [ShowAddVehicleform,setShowAddVehicleform]=useState(false)
-
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsSidebarOpen(false);
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   return (
     <>
       {/* You can move this into a global CSS file or Tailwind config if you like */}

@@ -5,68 +5,15 @@ import Footer from "../components/Details/Footer";
 import FilterSidebar from "../components/Inventory/Filter/FilterSidebar";
 import VehicleGrid from "../components/Inventory/Vehicles/VehicleGrid";
 import SortBar from "../components/Inventory/common/SortBar";
-import Pagination from "../components/Inventory/common/Pagination";
-const vehiclesMock = [
-  {
-    id: 1,
-    title: "Audi Q5 Premium Plus",
-    miles: 38000,
-    transmission: "Automatic",
-    price: 32000,
-    image:
-      "https://images.unsplash.com/photo-1606152421802-db97b9c7a11b?q=80&w=1174&auto=format&fit=crop&ixlib=rb-4.1.0",
-  },
-  {
-    id: 2,
-    title: "Honda Civic EX",
-    miles: 62500,
-    transmission: "CVT",
-    price: 18500,
-    featured: true,
-    image:
-      "https://images.unsplash.com/photo-1654870646430-e5b6f2c0fa93?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0",
-  },
-  {
-    id: 3,
-    title: "Ford F-150 XLT",
-    miles: 11000,
-    transmission: "V6 Turbo",
-    price: 45000,
-    image:
-      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0",
-  },
-  {
-    id: 4,
-    title: "Tesla Model 3",
-    miles: 25500,
-    transmission: "Electric",
-    price: 26800,
-    image:
-      "https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0",
-  },
-  {
-    id: 5,
-    title: "Toyota Camry LE",
-    miles: 98000,
-    transmission: "Automatic",
-    price: 12900,
-    image:
-      "https://images.unsplash.com/photo-1624578571415-09e9b1991929?q=80&w=690&auto=format&fit=crop&ixlib=rb-4.1.0",
-  },
-  {
-    id: 6,
-    title: "BMW X7 xDrive40i",
-    miles: 15000,
-    transmission: "Automatic",
-    price: 55000,
-    image:
-      "https://images.unsplash.com/photo-1731988666894-482242ceae2f?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0",
-  },
-];
+
+//api
+import api from "../config/server";
+
 
 const InventoryPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const totalCount = vehiclesMock.length;
+  const [totalCount,setTotalCount] = useState()
+  const [cars,setCars] = useState([])
 
   useEffect(() => {
     if (isSidebarOpen) {
@@ -77,15 +24,38 @@ const InventoryPage = () => {
   }, [isSidebarOpen]);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsSidebarOpen(false);
-        document.body.classList.remove("overflow-hidden");
+  let isMounted = true;
+
+  const handleResize = () => {
+    if (window.innerWidth >= 1024) {
+      setIsSidebarOpen(false);
+      document.body.classList.remove("overflow-hidden");
+    }
+  };
+
+  const fetchCars = async () => {
+    try {
+      const res = await api.get("/featuredproducts");
+      if (isMounted) {
+        setCars(res.data.cars);
+        setTotalCount(cars.length);
       }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  handleResize();
+  fetchCars();
+
+  window.addEventListener("resize", handleResize);
+
+  return () => {
+    isMounted = false;
+    window.removeEventListener("resize", handleResize);
+  };
+}, []);
+
 
   return (
     <>
@@ -139,8 +109,8 @@ const InventoryPage = () => {
 
             <div className="lg:col-span-3">
               <SortBar totalCount={totalCount} />
-              <VehicleGrid vehicles={vehiclesMock} />
-              <Pagination />
+              <VehicleGrid vehicles={cars} />
+              {/* <Pagination /> */}
             </div>
           </div>
         </div>

@@ -1,11 +1,48 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Car } from "lucide-react";
-
+import api from "../config/server"
+import { useAuth } from "../context/AuthContext";
 const LoginPage = () => {
-  const handleSubmit = (e) => {
+  const {login}=useAuth();
+  const [Email, setEmail] = useState("");
+  const [Password, setPassword] = useState("");
+  const [Err, setErr] = useState();
+
+  const navigate = useNavigate()
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login form submitted");
+    try {
+      console.log(Email, Password)
+      const res = await api.post("/auth/login", {
+      Email,
+      Password,
+    });
+
+    console.log("Response:", res);
+    console.log("Response data:", res.data);
+
+      console.log(res.data.success)
+      if (res.data.success) {
+        login(res.data.data, res.data.token);
+
+        console.log("rs::::"+res.data.data.role)
+        if (res.data.data.role === "admin") 
+          navigate("/admin");
+        else if (res.data.data.role === "dealer") 
+          navigate("/dealer");
+        else navigate("/");
+
+      }
+
+    } catch (err) {
+      setErr(
+        err.response?.data?.message ||
+        err.message ||
+        "Something went wrong"
+      );
+    }
   };
 
   return (
@@ -34,6 +71,7 @@ const LoginPage = () => {
             </label>
             <input
               type="email"
+              onChange={(e) => setEmail(e.target.value)}
               id="email"
               required
               autoComplete="email"
@@ -53,13 +91,14 @@ const LoginPage = () => {
             <input
               type="password"
               id="password"
+              onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200 shadow-sm"
               placeholder="••••••••"
             />
           </div>
-
+          {Err && <span>{Err}</span>}
           {/* Forgot password */}
           <div className="flex justify-end text-sm">
             <button

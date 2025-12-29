@@ -15,33 +15,33 @@ function SignupPage() {
     const [Password, setPassword] = useState("");
     const [ConfPassword, setConfPassword] = useState("");
     const [ErrorMasg, setErrorMsg] = useState("");
+    const [isDealer, setIsDealer] = useState(false);
 
     // function for handle submit
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMsg("");
-
         try {
             if (Password !== ConfPassword) {
                 throw new Error("Passwords do not match");
             }
-
             const res = await api.post("/auth/signup", {
                 Name,
                 Email,
                 Password,
+                Role: isDealer ? "dealer" : "user"
             });
 
-            console.log("Signup response:", res.data);
-
-            // if backend returns user object
+            // if backend returns success true
             if (res.data.success) {
-                login(res.data.data);
+                login(res.data.data, res.data.token);
                 navigate("/");
             }
         } catch (err) {
             setErrorMsg(
-                err.response?.data?.message || "Signup failed"
+                err.response?.data?.message ||
+                err.message ||
+                "Something went wrong"
             );
         }
     };
@@ -132,9 +132,20 @@ function SignupPage() {
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition duration-200 shadow-sm"
                             placeholder="••••••••"
                             onChange={(e) => setConfPassword(e.target.value)} />
-                        {ErrorMasg && <p className="text-red-700">{ErrorMasg}</p>}
                     </div>
-
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            id="dealer"
+                            checked={isDealer}
+                            onChange={(e) => {setIsDealer(e.target.checked)}}
+                            className="w-4 h-4"
+                        />
+                        <label htmlFor="dealer" className="text-sm text-gray-700">
+                            Sign up as Dealer
+                        </label>
+                    </div>
+                    {ErrorMasg && <p className="text-red-700">{ErrorMasg}</p>}
                     {/* Submit */}
                     <button
                         type="submit"

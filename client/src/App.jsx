@@ -9,6 +9,7 @@ import ContactPage from './pages/Contact'
 import DealerDashboard from './pages/Dealer/DealerDashBoard'
 import LoginPage from './pages/Login'
 import SignupPage from './pages/Signup'
+import VehicleDetails from './pages/Details'
 function App() {
   const [count, setCount] = useState(0)
 
@@ -21,7 +22,8 @@ function App() {
         <Route path="/contact" element={<ContactPage/>}/>
         <Route path='/dealer' element={<DealerDashboard/>}/>
         <Route path='/login' element={<LoginPage/>}/>
-        <Route path='/signup' element={<SignupPage/>}/>
+        <Route path='/signup' element={<SignupPage/>}/> 
+        <Route path="/details/:id" element={<VehicleDetails />} />
       </Routes>
     </>
   )
