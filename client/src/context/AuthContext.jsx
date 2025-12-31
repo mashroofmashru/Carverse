@@ -23,16 +23,19 @@ export const AuthProvider = ({ children }) => {
   const login = (userObj, token) => {
     setUser(userObj);
     setToken(token);
-    alert("login success")
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("auth_user");
     localStorage.removeItem("auth_token");
-    navigate("/login");
+    navigate("/");
   };
 
+  const update = (userObj)=>{
+    setUser(userObj);
+    alert("updated successfully")
+  }
   return (
     <AuthContext.Provider
       value={{
@@ -41,6 +44,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!user && !!token,
         login,
         logout,
+        update
       }}
     >
       {children}

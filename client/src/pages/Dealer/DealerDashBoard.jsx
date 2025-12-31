@@ -11,9 +11,10 @@ import {
   CheckCircle,
   Mail,
 } from "lucide-react";
-import Header from "../../components/DealerComponents/Header";
-import SideBar from "../../components/DealerComponents/SideBar";
+import Header from "../../components/common/Header";
+import SideBar from "../../components/common/SideBar";
 import AddCarForm from "../../components/Details/AddCarForm";
+import { DEALER_LINKS } from "../../constants/Links";
 const DealerDashboard = () => {
   const [ShowAddVehicleform,setShowAddVehicleform]=useState(false)
   return (
@@ -28,9 +29,9 @@ const DealerDashboard = () => {
       `}</style>
 
       <div className="bg-gray-50 font-inter min-h-screen flex flex-col">
-        <Header/>
+        <Header title={"Dealer Portal"}/>
         <div id="dashboard-layout" className="flex min-h-[calc(100vh-4rem)]">
-          <SideBar/>
+          <SideBar links={DEALER_LINKS}/>
           
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
             <h1 className="text-3xl font-extrabold text-gray-900 mb-6">

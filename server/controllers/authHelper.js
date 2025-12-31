@@ -8,20 +8,20 @@ module.exports = {
         try {
             req.body.Password = await bcrypt.hash(req.body.Password, 10);
 
-            const { Name, Email, Password, Role } = req.body;
+            const { Name, Email, Password, role } = req.body;
 
             const user = await User.create({
                 Name,
                 Email,
                 Password,
-                Role,
+                role,
             });
 
             //for token creation
             const token = jwt.sign(
                 {
                     id: user._id,
-                    role: user.Role,
+                    role: user.role,
                 },
                 process.env.JWT_SECRET,
                 { expiresIn: "7d" }
@@ -37,6 +37,7 @@ module.exports = {
                     id: user._id,
                     Name: user.Name,
                     Email: user.Email,
+                    role: user.role,
                 },
             });
         } catch (err) {
@@ -77,7 +78,7 @@ module.exports = {
             const token = jwt.sign(
                 {
                     id: user._id,
-                    role: user.Role,
+                    role: user.role,
                 },
                 process.env.JWT_SECRET,
                 { expiresIn: "7d" }
@@ -90,7 +91,8 @@ module.exports = {
                     _id: user._id,
                     Name: user.Name,
                     Email: user.Email,
-                    role: user.Role,
+                    role: user.role,
+                    Phone: user.Phone
                 },
             });
         } catch (err) {

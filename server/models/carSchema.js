@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const carSchema = new mongoose.Schema(
   {
+    dealerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     title: {
       type: String,
       required: true,
@@ -41,7 +46,7 @@ const carSchema = new mongoose.Schema(
     category: {
       type: String,
       enum: ["SUVs", "SEDAN", "HATCHBACK", "ELECTRIC"],
-      default: "",
+      default: "SUVs",
     },
 
     transmission: {

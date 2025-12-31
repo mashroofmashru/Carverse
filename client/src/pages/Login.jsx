@@ -2,53 +2,54 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Car } from "lucide-react";
 import api from "../config/server"
+import Toast from "../components/common/Toast";
 import { useAuth } from "../context/AuthContext";
 const LoginPage = () => {
-  const {login}=useAuth();
+  const { login } = useAuth();
   const [Email, setEmail] = useState("");
   const [Password, setPassword] = useState("");
-  const [Err, setErr] = useState();
 
-  const navigate = useNavigate()
+  const [notification, setNotification] = useState({ show: false, message: "", type: "success" });
   
+  const navigate = useNavigate()
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       console.log(Email, Password)
       const res = await api.post("/auth/login", {
-      Email,
-      Password,
-    });
+        Email,
+        Password,
+      });
 
-    console.log("Response:", res);
-    console.log("Response data:", res.data);
-
-      console.log(res.data.success)
       if (res.data.success) {
         login(res.data.data, res.data.token);
 
-        console.log("rs::::"+res.data.data.role)
-        if (res.data.data.role === "admin") 
+        if (res.data.data.role === "admin")
           navigate("/admin");
-        else if (res.data.data.role === "dealer") 
+        else if (res.data.data.role === "dealer")
           navigate("/dealer");
         else navigate("/");
 
       }
 
     } catch (err) {
-      setErr(
+      showToast(
         err.response?.data?.message ||
         err.message ||
-        "Something went wrong"
+        "Something went wrong","error"
       );
     }
+  };
+
+  const showToast = (message, type = "success") => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: "", type: "success" }), 3000);
   };
 
   return (
     <div className="bg-gray-50 min-h-screen flex items-center justify-center font-[Inter] p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 md:p-10 border border-gray-100">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Car className="text-blue-600 w-8 h-8" />
@@ -79,8 +80,6 @@ const LoginPage = () => {
               placeholder="you@example.com"
             />
           </div>
-
-          {/* Password */}
           <div>
             <label
               htmlFor="password"
@@ -98,8 +97,6 @@ const LoginPage = () => {
               placeholder="••••••••"
             />
           </div>
-          {Err && <span>{Err}</span>}
-          {/* Forgot password */}
           <div className="flex justify-end text-sm">
             <button
               type="button"
@@ -109,7 +106,6 @@ const LoginPage = () => {
             </button>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             className="text-white w-full py-3.5 bg-blue-600 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-lg shadow-blue-200/50"
@@ -127,6 +123,13 @@ const LoginPage = () => {
           </Link>
         </div>
       </div>
+        <Toast
+          isOpen={notification.show}
+          show={notification.show}
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification({ ...notification, show: false })}
+        />
     </div>
   );
 };

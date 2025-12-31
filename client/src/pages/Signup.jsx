@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Car } from "lucide-react";
 import api from '../config/server'
 import { useState } from "react";
+import Toast from "../components/common/Toast";
 import { useAuth } from '../../src/context/AuthContext';
 
 function SignupPage() {
@@ -14,36 +15,43 @@ function SignupPage() {
     const [Email, setEmail] = useState("");
     const [Password, setPassword] = useState("");
     const [ConfPassword, setConfPassword] = useState("");
-    const [ErrorMasg, setErrorMsg] = useState("");
     const [isDealer, setIsDealer] = useState(false);
 
-    // function for handle submit
+    const [notification, setNotification] = useState({ show: false, message: "", type: "success" });
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setErrorMsg("");
         try {
             if (Password !== ConfPassword) {
                 throw new Error("Passwords do not match");
             }
+            console.log(isDealer)
             const res = await api.post("/auth/signup", {
                 Name,
                 Email,
                 Password,
-                Role: isDealer ? "dealer" : "user"
+                role: isDealer ? "dealer" : "user"
             });
 
-            // if backend returns success true
             if (res.data.success) {
                 login(res.data.data, res.data.token);
-                navigate("/");
+                if (res.data.data.role === "admin")
+                    navigate("/admin");
+                else if (res.data.data.role === "dealer")
+                    navigate("/dealer");
+                else navigate("/");
             }
         } catch (err) {
-            setErrorMsg(
-                err.response?.data?.message ||
+            showToast(err.response?.data?.message ||
                 err.message ||
-                "Something went wrong"
-            );
+                "Something went wrong",
+                "error");
         }
+    };
+
+    const showToast = (message, type = "success") => {
+        setNotification({ show: true, message, type });
+        setTimeout(() => setNotification({ show: false, message: "", type: "success" }), 3000);
     };
 
     return (
@@ -138,14 +146,13 @@ function SignupPage() {
                             type="checkbox"
                             id="dealer"
                             checked={isDealer}
-                            onChange={(e) => {setIsDealer(e.target.checked)}}
+                            onChange={(e) => { setIsDealer(e.target.checked) }}
                             className="w-4 h-4"
                         />
                         <label htmlFor="dealer" className="text-sm text-gray-700">
                             Sign up as Dealer
                         </label>
                     </div>
-                    {ErrorMasg && <p className="text-red-700">{ErrorMasg}</p>}
                     {/* Submit */}
                     <button
                         type="submit"
@@ -166,6 +173,14 @@ function SignupPage() {
                     </Link>
                 </div>
             </div>
+            {notification.show && (
+                <Toast
+                    show={notification.show}
+                    message={notification.message}
+                    type={notification.type}
+                    onClose={() => setNotification({ ...notification, show: false })}
+                />
+            )}
         </div>
     );
 }
