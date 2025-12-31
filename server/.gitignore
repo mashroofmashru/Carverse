@@ -22,3 +22,4 @@ uploads/
 *.njsproj
 *.sln
 *.sw?
+.env
