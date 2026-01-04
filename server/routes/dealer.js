@@ -9,5 +9,6 @@ var authorize= require("../middlewares/authorizeMiddleware.js")
 router.post('/addcar',auth, authorize(["dealer"]),upload.array("images", 10), dealerHelpers.addCar);
 router.get('/get-inventory',auth,authorize(["dealer"]),dealerHelpers.getInventory);
 router.get('/get-enquiries',auth,authorize(["dealer"]),dealerHelpers.getEnquiries);
+router.delete('/delete-car/:id',auth,authorize(["dealer"]),dealerHelpers.deleteCar);
 router.delete('/delete-enquiry/:id',auth,authorize(["dealer"]),dealerHelpers.deleteEnquiry);
 module.exports = router;

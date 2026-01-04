@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   Phone: {
     type: String, 
     unique: true,
-    spare: true,
+    sparse: true,
     validate: {
       validator: function(v) {
         return !v || /^[6-9]\d{9}$/.test(v);

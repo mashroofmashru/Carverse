@@ -5,7 +5,7 @@ import './App.css'
 import Home from './pages/Home'
 import Details from './pages/Details'
 import InventoryPage from './pages/Inventory'
-import ContactPage from './pages/Contact'
+import AboutUsPage from './pages/AboutUsPage'
 import DealerDashboard from './pages/Dealer/DealerDashBoard'
 import LoginPage from './pages/Login'
 import SignupPage from './pages/Signup'
@@ -26,7 +26,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/details" element={<Details/>} />
         <Route path="/viewInventory" element={<InventoryPage/>} />
-        <Route path="/contact" element={<ContactPage/>}/>
+        <Route path="/about-us" element={<AboutUsPage/>}/>
         <Route path='/login' element={<LoginPage/>}/>
         <Route path='/signup' element={<SignupPage/>}/> 
         <Route path="/details/:id" element={<VehicleDetails />} />

@@ -11,7 +11,7 @@ const Navbar = () => {
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Inventory", href: "/viewinventory" },
-    { name: "Contact", href: "/contact" },
+    { name: "AboutUs", href: "/about-us" },
   ];
 
   const handleLogout = () => {
