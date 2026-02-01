@@ -37,6 +37,16 @@ const carSchema = new mongoose.Schema(
       required: true,
     },
 
+    // The original price set by the Dealer
+    dealerPrice: {
+      type: Number,
+    },
+
+    // 30% Markup Amount
+    profit: {
+      type: Number,
+    },
+
     fuelType: {
       type: String,
       enum: ["PETROL", "DIESEL", "ELECTRIC", "HYBRID"],

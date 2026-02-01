@@ -196,5 +196,37 @@ module.exports = {
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
+    },
+
+    getDashboardStats: async (req, res) => {
+        try {
+            const [orders, cars, users] = await Promise.all([
+                Order.find(),
+                Car.find(),
+                User.find()
+            ]);
+
+            const totalRevenue = orders.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+            const totalProfit = orders.reduce((acc, curr) => acc + (curr.profit || 0), 0);
+            const totalCarsSold = orders.length;
+            const totalInventory = cars.length;
+            const totalUsers = users.length;
+            const totalDealers = users.filter(u => u.role === 'dealer').length;
+
+            res.status(200).json({
+                success: true,
+                stats: {
+                    totalRevenue,
+                    totalProfit,
+                    totalCarsSold,
+                    totalInventory,
+                    totalUsers,
+                    totalDealers
+                }
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, message: "Failed to fetch dashboard stats" });
+        }
     }
 };

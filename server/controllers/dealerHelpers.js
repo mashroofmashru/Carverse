@@ -40,13 +40,20 @@ module.exports = {
         (file) => `/uploads/cars/${file.filename}`
       );
 
+      // Profit Calculation Logic
+      const dealerPrice = Number(req.body.price);
+      const profit = dealerPrice * 0.10;
+      const finalPrice = dealerPrice + profit;
+
       const car = await Car.create({
         dealerId: req.user.id,
         title: req.body.title,
         brand: req.body.brand,
         model: req.body.model,
         year: Number(req.body.year),
-        price: Number(req.body.price),
+        price: finalPrice,
+        dealerPrice: dealerPrice,
+        profit: profit,
         fuelType: req.body.fuelType,
         category: req.body.category,
         transmission: req.body.transmission,
@@ -207,6 +214,7 @@ module.exports = {
       ]);
 
       const totalRevenue = orders.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+      const totalProfit = orders.reduce((acc, curr) => acc + (curr.profit || 0), 0);
       const totalCarsSold = orders.length;
       const activeInventory = cars.length;
       const totalEnquiries = enquiries.length;
@@ -215,6 +223,7 @@ module.exports = {
         success: true,
         stats: {
           totalRevenue,
+          totalProfit,
           totalCarsSold,
           activeInventory,
           totalEnquiries

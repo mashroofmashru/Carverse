@@ -21,6 +21,7 @@ import AdminSettings from './pages/admin/AdminSettings'
 import DealerEnquiries from './pages/Dealer/DealerEnquiries'
 import DealerSettings from './pages/Dealer/DealerSettings'
 import ProtectedRoute from './pages/auth/ProtectedRoute'
+import DealerApproval from './pages/auth/DealerApproval'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -38,6 +39,7 @@ function App() {
         <Route path="/details/:id" element={<VehicleDetails />} />
 
         {/* Dealer routers */}
+        <Route path='/dealer/approval' element={<DealerApproval />} />
         <Route element={<ProtectedRoute allowedRoles={['dealer']} />}>
           <Route path='/dealer' element={<DealerDashboard />} />
           <Route path='/dealer/cars' element={<DealerInventory />} />

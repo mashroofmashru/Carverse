@@ -1,14 +1,21 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import CategoryCard from '../CategoryCard';
 
 const categoryData = [
-  { img: "https://cdn-icons-png.flaticon.com/512/55/55283.png", alt: "SUV", title: "SUVs" },
-  { img: "https://cdn-icons-png.flaticon.com/512/3202/3202926.png", alt: "Sedan", title: "Sedans" },
-  { img: "https://cdn-icons-png.flaticon.com/512/5035/5035162.png", alt: "Hatchback", title: "Hatchbacks" },
-  { img: "https://cdn-icons-png.flaticon.com/512/2087/2087622.png", alt: "Electric", title: "Electric" },
+  { img: "https://cdn-icons-png.flaticon.com/512/55/55283.png", alt: "SUV", title: "SUVs", value: "SUV" },
+  { img: "https://cdn-icons-png.flaticon.com/512/3202/3202926.png", alt: "Sedan", title: "Sedans", value: "SEDAN" },
+  { img: "https://cdn-icons-png.flaticon.com/512/5035/5035162.png", alt: "Hatchback", title: "Hatchbacks", value: "HATCHBACK" },
+  { img: "https://cdn-icons-png.flaticon.com/512/2087/2087622.png", alt: "Electric", title: "Electric", value: "ELECTRIC" },
 ];
 
 const CategoriesSection = () => {
+  const navigate = useNavigate();
+
+  const handleCategoryClick = (category) => {
+    navigate(`/viewInventory?category=${category}`);
+  };
+
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-6">
@@ -22,11 +29,12 @@ const CategoriesSection = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {categoryData.map((category) => (
-            <CategoryCard 
+            <CategoryCard
               key={category.title}
               imgUrl={category.img}
               altText={category.alt}
               title={category.title}
+              onClick={() => handleCategoryClick(category.value)}
             />
           ))}
         </div>

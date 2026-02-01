@@ -33,11 +33,13 @@ module.exports = {
                 success: true,
                 message: "User registered successfully",
                 token,
-                data: {
-                    id: user._id,
+                user: {
+                    _id: user._id,
                     Name: user.Name,
                     Email: user.Email,
                     role: user.role,
+                    status: user.status,
+                    isApplied: user.isApplied || false
                 },
             });
         } catch (err) {
@@ -87,12 +89,17 @@ module.exports = {
             res.json({
                 success: true,
                 token,
-                data: {
+                user: {
                     _id: user._id,
                     Name: user.Name,
                     Email: user.Email,
                     role: user.role,
-                    Phone: user.Phone
+                    Phone: user.Phone,
+                    status: user.status,
+                    isApplied: user.isApplied || false,
+                    dealershipName: user.dealershipName,
+                    dealershipAddress: user.dealershipAddress,
+                    licenseNumber: user.licenseNumber
                 },
             });
         } catch (err) {
@@ -101,4 +108,68 @@ module.exports = {
         }
     },
 
+    getMe: async (req, res) => {
+        try {
+            const user = await User.findById(req.user.id).select("-Password");
+            if (!user) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
+            res.json({
+                success: true,
+                user: {
+                    _id: user._id,
+                    Name: user.Name,
+                    Email: user.Email,
+                    role: user.role,
+                    Phone: user.Phone,
+                    status: user.status,
+                    isApplied: user.isApplied,
+                    dealershipName: user.dealershipName,
+                    dealershipAddress: user.dealershipAddress,
+                    licenseNumber: user.licenseNumber
+                }
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, message: "Server error" });
+        }
+    },
+
+    submitDealerDetails: async (req, res) => {
+        try {
+            const { dealershipName, dealershipAddress, licenseNumber } = req.body;
+
+            const user = await User.findById(req.user.id);
+            if (!user) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
+
+            user.dealershipName = dealershipName;
+            user.dealershipAddress = dealershipAddress;
+            user.licenseNumber = licenseNumber;
+            user.isApplied = true;
+
+            await user.save();
+
+            res.json({
+                success: true,
+                message: "Details submitted successfully! Your account is now under review.",
+                user: {
+                    _id: user._id,
+                    Name: user.Name,
+                    Email: user.Email,
+                    role: user.role,
+                    Phone: user.Phone,
+                    status: user.status,
+                    isApplied: user.isApplied,
+                    dealershipName: user.dealershipName,
+                    dealershipAddress: user.dealershipAddress,
+                    licenseNumber: user.licenseNumber
+                }
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ success: false, message: "Failed to submit details" });
+        }
+    }
 };

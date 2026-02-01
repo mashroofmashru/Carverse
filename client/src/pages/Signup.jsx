@@ -34,11 +34,11 @@ function SignupPage() {
             });
 
             if (res.data.success) {
-                login(res.data.data, res.data.token);
-                if (res.data.data.role === "admin")
+                login(res.data.user, res.data.token);
+                if (res.data.user.role === "admin")
                     navigate("/admin");
-                else if (res.data.data.role === "dealer")
-                    navigate("/dealer");
+                else if (res.data.user.role === "dealer")
+                    navigate("/dealer/approval");
                 else navigate("/");
             }
         } catch (err) {

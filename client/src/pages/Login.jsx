@@ -10,7 +10,7 @@ const LoginPage = () => {
   const [Password, setPassword] = useState("");
 
   const [notification, setNotification] = useState({ show: false, message: "", type: "success" });
-  
+
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -23,12 +23,17 @@ const LoginPage = () => {
       });
 
       if (res.data.success) {
-        login(res.data.data, res.data.token);
+        login(res.data.user, res.data.token);
 
-        if (res.data.data.role === "admin")
+        if (res.data.user.role === "admin")
           navigate("/admin");
-        else if (res.data.data.role === "dealer")
-          navigate("/dealer");
+        else if (res.data.user.role === "dealer") {
+          if (res.data.user.status === "approved") {
+            navigate("/dealer");
+          } else {
+            navigate("/dealer/approval");
+          }
+        }
         else navigate("/");
 
       }
@@ -37,7 +42,7 @@ const LoginPage = () => {
       showToast(
         err.response?.data?.message ||
         err.message ||
-        "Something went wrong","error"
+        "Something went wrong", "error"
       );
     }
   };
@@ -123,13 +128,13 @@ const LoginPage = () => {
           </Link>
         </div>
       </div>
-        <Toast
-          isOpen={notification.show}
-          show={notification.show}
-          message={notification.message}
-          type={notification.type}
-          onClose={() => setNotification({ ...notification, show: false })}
-        />
+      <Toast
+        isOpen={notification.show}
+        show={notification.show}
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification({ ...notification, show: false })}
+      />
     </div>
   );
 };

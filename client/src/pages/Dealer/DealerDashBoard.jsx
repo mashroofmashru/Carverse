@@ -23,6 +23,7 @@ const DealerDashboard = () => {
   const [ShowAddVehicleform, setShowAddVehicleform] = useState(false);
   const [stats, setStats] = useState({
     totalRevenue: 0,
+    totalProfit: 0,
     totalCarsSold: 0,
     activeInventory: 0,
     totalEnquiries: 0
@@ -186,7 +187,7 @@ const DealerDashboard = () => {
       head: [salesColumns],
       body: salesRows,
       theme: 'grid',
-      headStyles: { fillColor: [22, 163, 74] }, // Green color for sales
+      headStyles: { fillColor: [22, 163, 74] },
       styles: { fontSize: 10 },
     });
 
@@ -202,8 +203,17 @@ const DealerDashboard = () => {
     doc.save(`Dealer_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
+  const formatCurrency = (num) => {
+    if (!num) return '0';
+    if (num >= 10000000) return (num / 10000000).toFixed(1) + 'Cr';
+    if (num >= 100000) return (num / 100000).toFixed(1) + 'L';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+    return num.toLocaleString('en-IN');
+  };
+
   return (
     <>
+      {/* ... styles ... */}
       <style>{`
         .font-inter { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
         .text-primary { color: #2563eb; }
@@ -218,6 +228,7 @@ const DealerDashboard = () => {
           <SideBar links={DEALER_LINKS} />
 
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+            {/* ... Header and Description ... */}
             <h1 className="text-3xl font-extrabold text-gray-900 mb-6">
               Dealer Dashboard
             </h1>
@@ -239,7 +250,7 @@ const DealerDashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
+              {/* <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">
                     Total Enquiries
@@ -249,17 +260,30 @@ const DealerDashboard = () => {
                 <div className="p-3 bg-yellow-100 rounded-full text-yellow-600">
                   <Users2 className="w-6 h-6" />
                 </div>
-              </div>
+              </div> */}
 
-              {/* KPI Card 3: Total Revenue */}
+              {/*Total Revenue */}
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">
                     Total Revenue
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">₹{stats.totalRevenue.toLocaleString('en-IN')}</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">₹{formatCurrency(stats.totalRevenue)}</p>
                 </div>
                 <div className="p-3 bg-green-100 rounded-full text-green-600">
+                  <DollarSign className="w-6 h-6" />
+                </div>
+              </div>
+
+              {/* KPI Card: Total Profit */}
+              <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Profit
+                  </p>
+                  <p className="text-3xl font-bold text-green-600 mt-1">₹{formatCurrency(stats.totalProfit)}</p>
+                </div>
+                <div className="p-3 bg-green-50 rounded-full text-green-500">
                   <DollarSign className="w-6 h-6" />
                 </div>
               </div>
@@ -299,8 +323,8 @@ const DealerDashboard = () => {
                     {salesData.length > 0 ? (
                       salesData.map((data, index) => {
                         // Calculate height percentage, max assumed 10 for basic scaling, or dynamic
-                        const maxVal = Math.max(...salesData.map(d => d.count), 5); // Minimum 5 for scale
-                        const height = Math.max((data.count / maxVal) * 100, 5); // Min 5% height
+                        const maxVal = Math.max(...salesData.map(d => d.count), 5);
+                        const height = Math.max((data.count / maxVal) * 100, 5);
 
                         return (
                           <div key={index} className="flex flex-col items-center flex-1 group">

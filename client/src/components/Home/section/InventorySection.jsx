@@ -12,7 +12,6 @@ const InventorySection = () => {
     const fetchCars = async () => {
       try {
         const res = await api.get("/featuredproducts");
-        console.log(res.data)
         setCars(res.data.cars.filter(car => car.status !== "SOLD"));
       } catch (err) {
         console.error(err);
@@ -51,8 +50,8 @@ const InventorySection = () => {
               car={{
                 _id: car._id,
                 title: car.title,
-                details: `${car.transmission} • ${car.fuelType}`,
-                dealer: "Verified Dealer",
+                details: `${car.category} • ${car.transmission} • ${car.fuelType}`,
+                dealer: `${car.dealerId.Name}`,
                 price: `₹${car.price}`,
                 imgUrl: `http://localhost:3000${car.images[0]}`,
                 tag: "New",

@@ -5,7 +5,7 @@ const axios = require('axios');
 module.exports = {
     getFeaturedCars: async (req, res, next) => {
         try {
-            const cars = await Car.find().limit(6);
+            const cars = await Car.find().populate("dealerId", "Name").limit(6);
 
             res.status(200).json({
                 success: true,
@@ -24,7 +24,7 @@ module.exports = {
     },
     getAllCars: async (req, res, next) => {
         try {
-            const cars = await Car.find();
+            const cars = await Car.find().populate("dealerId", "Name");
 
             res.status(200).json({
                 success: true,
@@ -203,6 +203,7 @@ module.exports = {
                 userId,
                 dealerId,
                 amount,
+                profit: car.profit || 0, // Save the profit value
                 status: "COMPLETED",
                 paymentDetails: {
                     method: "Credit Card",

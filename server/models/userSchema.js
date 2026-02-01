@@ -5,11 +5,11 @@ const userSchema = new mongoose.Schema({
   Email: { type: String, required: true, unique: true },
   Password: { type: String, required: true },
   Phone: {
-    type: String, 
+    type: String,
     unique: true,
     sparse: true,
     validate: {
-      validator: function(v) {
+      validator: function (v) {
         return !v || /^[6-9]\d{9}$/.test(v);
       },
       message: props => `${props.value} is not a valid 10-digit phone number!`
@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema({
       return this.role === "dealer" ? "pending" : "approved";
     },
   },
+  dealershipName: { type: String },
+  dealershipAddress: { type: String },
+  licenseNumber: { type: String },
+  isApplied: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model("User", userSchema);

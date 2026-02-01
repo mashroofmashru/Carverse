@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import api from "../../config/server";
 import {
   Users2,
   Car,
@@ -18,15 +19,37 @@ import StatCard from "../../components/Dashboard/StateCard";
 import ActionButton from "../../components/Dashboard/ActionButton";
 import LogItem from "../../components/Dashboard/LogItem";
 import { ADMIN_LINKS } from "../../constants/Links";
-const AdminDashBoard = () => {
-  const adminLinks = [
-    { title: "Dashboard", path: "/admin", icon: LayoutDashboard },
-    { title: "User Management", path: "/admin/users", icon: Users2 },
-    { title: "Inventory", path: `/dealer/cars`, icon: Car },
-    { title: "Security Logs", path: "/admin/logs", icon: ShieldAlert },
-  ];
 
-  
+const AdminDashBoard = () => {
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalDealers: 0,
+    totalRevenue: 0,
+    totalProfit: 0,
+    totalInventory: 0
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await api.get('/admin/get-dashboard-stats');
+        if (res.data.success) {
+          setStats(res.data.stats);
+        }
+      } catch (error) {
+        console.error("Failed to fetch admin stats", error);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const formatCurrency = (num) => {
+    if (!num) return '0';
+    if (num >= 10000000) return (num / 10000000).toFixed(1) + 'Cr';
+    if (num >= 100000) return (num / 100000).toFixed(1) + 'L';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+    return num.toLocaleString('en-IN');
+  };
 
   return (
     <div className="bg-gray-50 font-inter min-h-screen flex flex-col">
@@ -43,10 +66,10 @@ const AdminDashBoard = () => {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <StatCard title="Total Platform Users" value="14,208" icon={Users2} trend="+12%" color="blue" />
-              <StatCard title="Active Dealerships" value="382" icon={TrendingUp} trend="+5%" color="green" />
-              <StatCard title="System Uptime" value="99.9%" icon={Server} trend="Stable" color="purple" />
-              <StatCard title="Pending Reports" value="23" icon={AlertTriangle} trend="Urgent" color="red" />
+              <StatCard title="Total Users" value={stats.totalUsers} icon={Users2} color="blue" />
+              <StatCard title="Active Dealerships" value={stats.totalDealers} icon={TrendingUp} color="purple" />
+              <StatCard title="Total Revenue" value={`₹${formatCurrency(stats.totalRevenue)}`} icon={Activity} color="green" />
+              <StatCard title="Total Profit" value={`₹${formatCurrency(stats.totalProfit)}`} icon={TrendingUp} color="green" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">

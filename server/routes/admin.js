@@ -13,4 +13,5 @@ router.delete('/delete-car/:id', auth, authorize(["admin"]), adminHelpers.delete
 router.delete('/delete-user/:id', auth, authorize(["admin"]), adminHelpers.deleteUser);
 router.patch('/update-user-status/:id', auth, authorize(["admin"]), adminHelpers.updateUserStatus);
 router.delete('/delete-order-car/:id', auth, authorize(["admin"]), adminHelpers.deleteOrder);
+router.get('/get-dashboard-stats', auth, authorize(["admin"]), adminHelpers.getDashboardStats);
 module.exports = router;

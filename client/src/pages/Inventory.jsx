@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Search, IndianRupee, ArrowDownAZ, LayoutGrid,
   Sparkles, Fuel, Settings2, ArrowUpRight, Gauge, Palette
@@ -10,6 +11,9 @@ import CarCard from "../components/Home/CarCard";
 
 // --- Main Page Component ---
 const InventoryPage = () => {
+  const [searchParams] = useSearchParams();
+  const initialCategory = searchParams.get("category");
+
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +42,9 @@ const InventoryPage = () => {
       const s = searchTerm.toLowerCase();
       // Filter sold cars
       if (car.status === "SOLD") return false;
+
+      // Filter by category URL param
+      if (initialCategory && car.category !== initialCategory) return false;
 
       return s === "" ||
         car.title?.toLowerCase().includes(s) ||
@@ -114,7 +121,7 @@ const InventoryPage = () => {
                   _id: car._id,
                   title: car.title,
                   details: `${car.transmission} • ${car.fuelType}`,
-                  dealer: "Verified Dealer",
+                  dealer: `${car.dealerId.Name}`,
                   price: `₹${car.price}`,
                   imgUrl: `http://localhost:3000${car.images[0]}`,
                   tagColor: "bg-blue-600",
