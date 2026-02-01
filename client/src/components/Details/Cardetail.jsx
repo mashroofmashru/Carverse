@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/authContext";
+import { useAuth } from "../../context/AuthContext";
 import {
   Gauge,
   Fuel,
@@ -10,6 +10,8 @@ import {
   MessageCircle,
   CalendarDays,
   Star,
+  CreditCard,
+  Smartphone,
 } from "lucide-react";
 import api from "../../config/server";
 
@@ -228,6 +230,7 @@ const CarDetailPage = ({ car }) => {
 
 const PaymentModal = ({ isOpen, onClose, car, user }) => {
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("card"); // 'card' or 'upi'
   const navigate = useNavigate();
   // Form State
   const [formData, setFormData] = useState({
@@ -235,7 +238,8 @@ const PaymentModal = ({ isOpen, onClose, car, user }) => {
     address: "",
     city: "",
     zipCode: "",
-    phone: user?.Phone || ""
+    phone: user?.Phone || "",
+    upiId: ""
   });
 
   if (!isOpen) return null;
@@ -252,7 +256,10 @@ const PaymentModal = ({ isOpen, onClose, car, user }) => {
         carId: car._id,
         dealerId: car.dealerId?._id || car.dealerId,
         amount: car.price,
-        customerDetails: formData // Send the address details
+        customerDetails: {
+          ...formData,
+          paymentMethod
+        }
       });
       if (res.data.success) {
         alert("Payment Successful! Car purchased.");
@@ -268,47 +275,94 @@ const PaymentModal = ({ isOpen, onClose, car, user }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-4">Complete Purchase</h2>
-        <div className="mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100">
-          <h3 className="tex-sm text-blue-800 font-bold uppercase tracking-wider mb-1">Order Summary</h3>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700 font-medium">{car.brand} {car.model}</span>
-            <span className="text-xl font-black text-blue-600">₹{car.price.toLocaleString()}</span>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="bg-white rounded-3xl max-w-lg w-full p-8 animate-in fade-in zoom-in duration-300 max-h-[90vh] overflow-y-auto shadow-2xl">
+        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          Secure Checkout
+        </h2>
+
+        <div className="mb-8 bg-blue-600 p-6 rounded-2xl text-white shadow-lg shadow-blue-200">
+          <h3 className="text-sm font-bold uppercase tracking-wider mb-2 opacity-80">Final Amount</h3>
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-lg font-bold">{car.brand} {car.model}</p>
+              <p className="text-xs opacity-70">Incl. all taxes & fees</p>
+            </div>
+            <span className="text-3xl font-bold">₹{car.price.toLocaleString()}</span>
           </div>
         </div>
 
-        <form onSubmit={handlePayment} className="space-y-4">
+        <form onSubmit={handlePayment} className="space-y-6">
           {/* Shipping Details */}
-          <div>
-            <h4 className="text-sm font-bold text-gray-900 mb-3 border-b pb-2">Shipping & Contact Details</h4>
-            <div className="space-y-3">
-              <input required name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder="Full Name" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
-              <input required name="phone" value={formData.phone} onChange={handleInputChange} placeholder="Phone Number" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
-              <input required name="address" value={formData.address} onChange={handleInputChange} placeholder="Street Address" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold text-gray-900 border-b pb-2">Delivery & Contact</h4>
+            <div className="grid grid-cols-1 gap-3">
+              <input required name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder="Full Name" className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+              <input required name="phone" value={formData.phone} onChange={handleInputChange} placeholder="Phone Number" className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+              <input required name="address" value={formData.address} onChange={handleInputChange} placeholder="Street Address" className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
               <div className="grid grid-cols-2 gap-3">
-                <input required name="city" value={formData.city} onChange={handleInputChange} placeholder="City" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
-                <input required name="zipCode" value={formData.zipCode} onChange={handleInputChange} placeholder="ZIP Code" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+                <input required name="city" value={formData.city} onChange={handleInputChange} placeholder="City" className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                <input required name="zipCode" value={formData.zipCode} onChange={handleInputChange} placeholder="ZIP Code" className="w-full p-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
               </div>
             </div>
           </div>
 
-          {/* Payment Details */}
-          <div className="pt-2">
-            <h4 className="text-sm font-bold text-gray-900 mb-3 border-b pb-2">Payment Information</h4>
-            <div className="space-y-3">
-              <input required type="text" placeholder="Card Number" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" pattern="\d{16}" title="16 digits" />
-              <div className="grid grid-cols-2 gap-3">
-                <input required type="text" placeholder="MM/YY" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
-                <input required type="text" placeholder="CVV" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" pattern="\d{3}" title="3 digits" />
-              </div>
+          {/* Payment Method Selector */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-bold text-gray-900 border-b pb-2">Payment Method</h4>
+            <div className="flex p-1.5 bg-gray-100 rounded-2xl gap-1">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("card")}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${paymentMethod === "card" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+              >
+                <CreditCard size={18} /> Card
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod("upi")}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${paymentMethod === "upi" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+              >
+                <Smartphone size={18} /> UPI
+              </button>
+            </div>
+
+            {/* Conditional Payment Fields */}
+            <div className="p-5 bg-gray-50 border border-gray-200 rounded-2xl">
+              {paymentMethod === "card" ? (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <CreditCard className="absolute left-4 top-1/3 text-gray-400" size={18} />
+                    <input required={paymentMethod === "card"} type="text" placeholder="Card Number" className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all" pattern="\d{16}" title="16 digits" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input required={paymentMethod === "card"} type="text" placeholder="MM/YY" className="w-full p-3.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                    <input required={paymentMethod === "card"} type="text" placeholder="CVV" className="w-full p-3.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all" pattern="\d{3}" title="3 digits" />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input
+                      required={paymentMethod === "upi"}
+                      name="upiId"
+                      value={formData.upiId}
+                      onChange={handleInputChange}
+                      type="text"
+                      placeholder="username@bank"
+                      className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 text-center italic">You will receive a request on your UPI app</p>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="flex gap-3 mt-8 pt-4 border-t">
-            <button type="button" onClick={onClose} className="flex-1 py-3 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition">Cancel</button>
-            <button type="submit" disabled={loading} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 shadow-lg shadow-blue-200 transition">
+          <div className="flex gap-4 pt-6 mt-4 border-t">
+            <button type="button" onClick={onClose} className="flex-1 py-3.5 border border-gray-200 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-all">Cancel</button>
+            <button type="submit" disabled={loading} className="flex-[2] py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 shadow-lg shadow-blue-200 transition-all">
               {loading ? "Processing..." : `Pay ₹${car.price.toLocaleString()}`}
             </button>
           </div>
