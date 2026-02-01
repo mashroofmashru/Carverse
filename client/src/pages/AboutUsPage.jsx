@@ -23,7 +23,7 @@ const AboutUsPage = () => {
                 Redefining the <span className="text-primary">Car Buying</span> Experience
               </h1>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Founded in 2010, CarVerse began with a simple mission: to make finding your next vehicle 
+                Founded in 2010, AutoNext began with a simple mission: to make finding your next vehicle 
                 as transparent, enjoyable, and efficient as possible. Today, we are one of the region's 
                 most trusted names in automotive excellence.
               </p>
@@ -56,7 +56,7 @@ const AboutUsPage = () => {
                     model was broken—filled with hidden fees and high-pressure tactics. 
                   </p>
                   <p className="text-gray-600 leading-relaxed">
-                    CarVerse was built on the foundation of **Integrity First**. We leverage technology 
+                    AutoNext was built on the foundation of Integrity First. We leverage technology 
                     to provide real-time pricing and deep vehicle history, ensuring you have all the 
                     facts before you ever step foot on our lot.
                   </p>

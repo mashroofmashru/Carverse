@@ -137,17 +137,17 @@ const CarDetailPage = ({ car }) => {
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow">
-            <h3 className="font-bold">Sold By</h3>
-            <p>{car.dealerId?.Name}</p>
+            <h3>Sold By</h3>
+            <p className="font-bold" >{car.dealerId?.Name}</p>
             <p className="text-sm text-gray-500">{car.dealerId?.Email}</p>
             <div className="flex items-center gap-1 mt-2">
               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
               Verified Dealer
             </div>
           </div>
-
+            
           <div className="bg-white p-6 rounded-2xl shadow">
-            <h3 className="font-bold mb-4">Contact Dealer</h3>
+            <h3 className="font-bold mb-4">Book now</h3>
 
             <form onSubmit={handleSubmit} className="space-y-3">
               <input
