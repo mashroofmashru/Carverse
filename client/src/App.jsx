@@ -19,7 +19,9 @@ import DealerInventory from './pages/Dealer/DealerInventory'
 import DealerSoldInventory from './pages/Dealer/DealerSoldInventory'
 import AdminSettings from './pages/admin/AdminSettings'
 import DealerEnquiries from './pages/Dealer/DealerEnquiries'
+import DealerSettings from './pages/Dealer/DealerSettings'
 import ProtectedRoute from './pages/auth/ProtectedRoute'
+
 function App() {
   const [count, setCount] = useState(0)
 
@@ -35,13 +37,13 @@ function App() {
         <Route path='/signup' element={<SignupPage />} />
         <Route path="/details/:id" element={<VehicleDetails />} />
 
-
         {/* Dealer routers */}
         <Route element={<ProtectedRoute allowedRoles={['dealer']} />}>
           <Route path='/dealer' element={<DealerDashboard />} />
           <Route path='/dealer/cars' element={<DealerInventory />} />
           <Route path='/dealer/sold-cars' element={<DealerSoldInventory />} />
           <Route path='/dealer/enquiries' element={<DealerEnquiries />} />
+          <Route path='/dealer/settings' element={<DealerSettings />} />
         </Route>
 
         {/* admin routers */}

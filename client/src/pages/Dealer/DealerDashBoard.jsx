@@ -1,25 +1,209 @@
 import React, { useState, useEffect } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { useNavigate } from "react-router-dom";
 import {
   Car,
   Users2,
   DollarSign,
-  PlusCircle,
   Plus,
   PhoneCall,
   FileText,
-  UploadCloud,
   CheckCircle,
-  Mail,
+  Download,
 } from "lucide-react";
 import Header from "../../components/common/Header";
 import SideBar from "../../components/common/SideBar";
 import AddCarForm from "../../components/Details/AddCarForm";
+import api from "../../config/server";
 import { DEALER_LINKS } from "../../constants/Links";
+
 const DealerDashboard = () => {
-  const [ShowAddVehicleform,setShowAddVehicleform]=useState(false)
+  const navigate = useNavigate();
+  const [ShowAddVehicleform, setShowAddVehicleform] = useState(false);
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    totalCarsSold: 0,
+    activeInventory: 0,
+    totalEnquiries: 0
+  });
+  const [salesData, setSalesData] = useState([]);
+  const [loadingReport, setLoadingReport] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [statsRes, soldRes] = await Promise.all([
+          api.get('/dealer/get-dashboard-stats'),
+          api.get('/dealer/get-sold-cars')
+        ]);
+
+        if (statsRes.data.success) {
+          setStats(statsRes.data.stats);
+        }
+
+        if (soldRes.data.success) {
+          processSalesData(soldRes.data.orders);
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const processSalesData = (orders) => {
+    const lastSixMonths = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      lastSixMonths.push({
+        month: d.toLocaleString('default', { month: 'short' }),
+        fullDate: d,
+        count: 0
+      });
+    }
+
+    orders.forEach(order => {
+      const orderDate = new Date(order.createdAt);
+      const monthItem = lastSixMonths.find(m =>
+        m.fullDate.getMonth() === orderDate.getMonth() &&
+        m.fullDate.getFullYear() === orderDate.getFullYear()
+      );
+      if (monthItem) {
+        monthItem.count += 1;
+      }
+    });
+
+    setSalesData(lastSixMonths);
+  };
+
+  const handleGenerateReport = async () => {
+    setLoadingReport(true);
+    try {
+      const [inventoryRes, soldRes] = await Promise.all([
+        api.get('/dealer/get-inventory'),
+        api.get('/dealer/get-sold-cars')
+      ]);
+
+      if (inventoryRes.data.success && soldRes.data.success) {
+        generatePDF(inventoryRes.data.cars, soldRes.data.orders);
+      }
+    } catch (error) {
+      console.error("Failed to generate report", error);
+      alert("Failed to generate report. Please try again.");
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  const generatePDF = (inventory, orders) => {
+    const doc = new jsPDF();
+
+    // Calculate Summaries
+    const totalInventory = inventory.length;
+    const totalSold = orders.length;
+    const totalRevenue = orders.reduce((sum, order) => sum + (order.amount || 0), 0);
+
+    // Logo
+    doc.setFontSize(24);
+    doc.setTextColor(37, 99, 235);
+    doc.setFont("helvetica", "bold");
+    doc.text("AutoNext", 14, 20);
+
+    // Title
+    doc.setFontSize(16);
+    doc.setTextColor(40);
+    doc.setFont("helvetica", "normal");
+    doc.text("Dealer Performance Report", 14, 30);
+
+    // Date
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 36);
+
+    // Summary Section
+    doc.setDrawColor(220);
+    doc.line(14, 40, 196, 40);
+
+    doc.setFontSize(12);
+    doc.setTextColor(60);
+    doc.text("Performance Summary:", 14, 48);
+
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.text(`Total Inventory: ${totalInventory}`, 14, 55);
+    doc.text(`Total Sales: ${totalSold}`, 80, 55);
+    doc.text(`Total Revenue: Rs. ${totalRevenue.toLocaleString('en-IN')}`, 140, 55);
+
+    doc.line(14, 61, 196, 61);
+
+    // Section 1: Inventory
+    doc.setFontSize(14);
+    doc.setTextColor(40);
+    doc.text("Current Inventory", 14, 70);
+
+    const inventoryColumns = ["Model", "Brand", "Year", "Price", "Color", "Fuel Type"];
+    const inventoryRows = inventory.map(car => [
+      car.model,
+      car.brand,
+      car.year,
+      `Rs. ${car.price.toLocaleString('en-IN')}`,
+      car.color,
+      car.fuelType
+    ]);
+
+    autoTable(doc, {
+      startY: 75,
+      head: [inventoryColumns],
+      body: inventoryRows,
+      theme: 'grid',
+      headStyles: { fillColor: [37, 99, 235] },
+      styles: { fontSize: 10 },
+    });
+
+    const finalY = doc.lastAutoTable.finalY || 50;
+
+    doc.setFontSize(14);
+    doc.setTextColor(40);
+    doc.text("Sales History", 14, finalY + 15);
+
+    const salesColumns = ["Date", "Car", "Customer Name", "Amount"];
+    const salesRows = orders.map(order => {
+      const carName = order.carId ? `${order.carId.brand} ${order.carId.model}` : 'Deleted Car';
+      const customerName = order.userId ? order.userId.Name : 'Unknown';
+      const date = new Date(order.createdAt).toLocaleDateString();
+      return [
+        date,
+        carName,
+        customerName,
+        `Rs. ${order.amount ? order.amount.toLocaleString('en-IN') : 0}`
+      ];
+    });
+
+    autoTable(doc, {
+      startY: finalY + 20,
+      head: [salesColumns],
+      body: salesRows,
+      theme: 'grid',
+      headStyles: { fillColor: [22, 163, 74] }, // Green color for sales
+      styles: { fontSize: 10 },
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.setTextColor(150);
+      doc.text('Page ' + i + ' of ' + pageCount, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+    }
+
+    doc.save(`Dealer_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   return (
     <>
-      {/* You can move this into a global CSS file or Tailwind config if you like */}
       <style>{`
         .font-inter { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
         .text-primary { color: #2563eb; }
@@ -29,13 +213,13 @@ const DealerDashboard = () => {
       `}</style>
 
       <div className="bg-gray-50 font-inter min-h-screen flex flex-col">
-        <Header title={"Dealer Portal"}/>
+        <Header title={"Dealer Control Center"} />
         <div id="dashboard-layout" className="flex min-h-[calc(100vh-4rem)]">
-          <SideBar links={DEALER_LINKS}/>
-          
+          <SideBar links={DEALER_LINKS} />
+
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
             <h1 className="text-3xl font-extrabold text-gray-900 mb-6">
-              Welcome Back, Acme Motors!
+              Dealer Dashboard
             </h1>
             <p className="text-gray-500 mb-8">
               Here is a snapshot of your dealership performance and key tasks.
@@ -48,49 +232,48 @@ const DealerDashboard = () => {
                   <p className="text-sm font-medium text-gray-500">
                     Total Inventory
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">245</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">{stats.activeInventory}</p>
                 </div>
                 <div className="p-3 bg-blue-100 rounded-full text-primary">
                   <Car className="w-6 h-6" />
                 </div>
               </div>
 
-              {/* KPI Card 2: Active Leads */}
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">
-                    Active Leads
+                    Total Enquiries
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">87</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">{stats.totalEnquiries}</p>
                 </div>
                 <div className="p-3 bg-yellow-100 rounded-full text-yellow-600">
                   <Users2 className="w-6 h-6" />
                 </div>
               </div>
 
-              {/* KPI Card 3: Sales YTD */}
+              {/* KPI Card 3: Total Revenue */}
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">
-                    Sales YTD
+                    Total Revenue
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">$1.8M</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">₹{stats.totalRevenue.toLocaleString('en-IN')}</p>
                 </div>
                 <div className="p-3 bg-green-100 rounded-full text-green-600">
                   <DollarSign className="w-6 h-6" />
                 </div>
               </div>
 
-              {/* KPI Card 4: New Listings Today */}
+              {/* KPI Card 4: Cars Sold */}
               <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">
-                    New Listings Today
+                    Cars Sold
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">4</p>
+                  <p className="text-3xl font-bold text-gray-900 mt-1">{stats.totalCarsSold}</p>
                 </div>
                 <div className="p-3 bg-red-100 rounded-full text-red-600">
-                  <PlusCircle className="w-6 h-6" />
+                  <CheckCircle className="w-6 h-6" />
                 </div>
               </div>
             </div>
@@ -99,79 +282,50 @@ const DealerDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left 2/3: Activity & Chart */}
               <div className="lg:col-span-2 space-y-6">
-                {/* Recent Activity Card */}
-                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                  <div className="flex justify-between items-center mb-4">
+
+                {/* Sales Chart */}
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 min-h-[400px] flex flex-col">
+                  <div className="flex justify-between items-center mb-8">
                     <h2 className="text-xl font-semibold text-gray-800">
-                      Recent Activity Log
+                      Monthly Sales Performance
                     </h2>
-                    <button className="text-sm text-primary font-medium hover:text-blue-700 transition">
-                      View All
-                    </button>
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      <div className="w-3 h-3 bg-primary rounded-full"></div>
+                      <span>Cars Sold</span>
+                    </div>
                   </div>
 
-                  <ul className="divide-y divide-gray-100">
-                    {/* Activity Item 1 */}
-                    <li className="py-3 flex items-start space-x-3">
-                      <div className="p-2 bg-green-100 rounded-lg text-green-600 mt-1">
-                        <CheckCircle className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          Vehicle Sold: Tesla Model Y
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Sale closed by Jane Doe. Profit: $5,200.
-                        </p>
-                      </div>
-                      <span className="ml-auto text-xs text-gray-400">
-                        5 min ago
-                      </span>
-                    </li>
+                  <div className="flex-1 flex items-end justify-between space-x-4 px-4 pb-2 border-b border-gray-100">
+                    {salesData.length > 0 ? (
+                      salesData.map((data, index) => {
+                        // Calculate height percentage, max assumed 10 for basic scaling, or dynamic
+                        const maxVal = Math.max(...salesData.map(d => d.count), 5); // Minimum 5 for scale
+                        const height = Math.max((data.count / maxVal) * 100, 5); // Min 5% height
 
-                    {/* Activity Item 2 */}
-                    <li className="py-3 flex items-start space-x-3">
-                      <div className="p-2 bg-yellow-100 rounded-lg text-yellow-600 mt-1">
-                        <Mail className="w-5 h-5" />
+                        return (
+                          <div key={index} className="flex flex-col items-center flex-1 group">
+                            <div className="relative w-full flex items-end justify-center h-64">
+                              <div
+                                style={{ height: `${height}%` }}
+                                className="w-full max-w-[40px] bg-blue-100 rounded-t-lg group-hover:bg-primary transition-all duration-300 relative"
+                              >
+                                <div className="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded shadow-lg pointer-events-none whitespace-nowrap z-10">
+                                  {data.count} Sales
+                                </div>
+                              </div>
+                            </div>
+                            <span className="mt-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                              {data.month}
+                            </span>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        Loading chart data...
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          New Lead Received: John Smith
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Interested in Ford F-150. Assign to sales.
-                        </p>
-                      </div>
-                      <span className="ml-auto text-xs text-gray-400">
-                        1 hour ago
-                      </span>
-                    </li>
-
-                    {/* Activity Item 3 */}
-                    <li className="py-3 flex items-start space-x-3">
-                      <div className="p-2 bg-blue-100 rounded-lg text-primary mt-1">
-                        <UploadCloud className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          Inventory Update
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          4 new vehicles successfully listed for sale.
-                        </p>
-                      </div>
-                      <span className="ml-auto text-xs text-gray-400">
-                        3 hours ago
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Sales/Chart Placeholder */}
-                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 h-80 flex items-center justify-center">
-                  <p className="text-gray-400 font-medium text-lg">
-                    Monthly Sales Performance Chart Placeholder
-                  </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -183,53 +337,38 @@ const DealerDashboard = () => {
                     Quick Actions
                   </h2>
                   <div className="space-y-3">
-                    <button onClick={()=>setShowAddVehicleform(true)} className="w-full flex items-center justify-center py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition shadow-md shadow-blue-200/50">
+                    <button onClick={() => setShowAddVehicleform(true)} className="w-full flex items-center justify-center py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition shadow-md shadow-blue-200/50">
                       <Plus className="w-5 h-5 mr-2" />
                       Add New Vehicle{ShowAddVehicleform}
                     </button>
-                    <button className="w-full flex items-center justify-center py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">
+                    <button
+                      onClick={() => navigate('/dealer/enquiries')}
+                      className="w-full flex items-center justify-center py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition"
+                    >
                       <PhoneCall className="w-5 h-5 mr-2" />
                       Contact Next Lead
                     </button>
-                    <button className="w-full flex items-center justify-center py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">
-                      <FileText className="w-5 h-5 mr-2" />
-                      Generate Report
+                    <button
+                      onClick={handleGenerateReport}
+                      disabled={loadingReport}
+                      className="w-full flex items-center justify-center py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loadingReport ? (
+                        <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                      ) : (
+                        <FileText className="w-5 h-5 mr-2" />
+                      )}
+
+                      {loadingReport ? 'Generating...' : 'Generate Report'}
                     </button>
                   </div>
-                </div>
-
-                {/* Top Inventory Snapshot Card */}
-                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                    Top Inventory
-                  </h2>
-                  <ul className="space-y-4">
-                    <li className="flex justify-between items-center text-sm">
-                      <span className="text-gray-700 font-medium">
-                        Ford Mustang
-                      </span>
-                      <span className="font-bold text-lg text-primary">12</span>
-                    </li>
-                    <li className="flex justify-between items-center text-sm">
-                      <span className="text-gray-700 font-medium">
-                        Honda CR-V
-                      </span>
-                      <span className="font-bold text-lg text-primary">10</span>
-                    </li>
-                    <li className="flex justify-between items-center text-sm">
-                      <span className="text-gray-700 font-medium">
-                        Toyota Tacoma
-                      </span>
-                      <span className="font-bold text-lg text-primary">9</span>
-                    </li>
-                  </ul>
                 </div>
               </div>
             </div>
           </main>
         </div>
       </div>
-      {ShowAddVehicleform&&(<AddCarForm onClose={() => setShowAddVehicleform(false)}/>)}
+      {ShowAddVehicleform && (<AddCarForm onClose={() => setShowAddVehicleform(false)} />)}
     </>
   );
 };

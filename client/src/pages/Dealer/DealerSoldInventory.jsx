@@ -15,7 +15,7 @@ const DealerSoldInventory = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all"); // This state will become unused
-  const [selectedCar, setSelectedCar] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   // --- Alert & Notification States ---
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, title: "" });
@@ -67,7 +67,7 @@ const DealerSoldInventory = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col font-inter text-gray-900">
-      <Header title="Dealer Portal" />
+      <Header title="Dealer Control Center" />
 
       <div className="flex flex-1">
         <SideBar links={DEALER_LINKS} />
@@ -146,7 +146,7 @@ const DealerSoldInventory = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => setSelectedCar(order.carId)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><Eye size={18} /></button>
+                          <button onClick={() => setSelectedOrder(order)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><Eye size={18} /></button>
                           {/* Removing Delete for Sold Cars for now or keeping it? The user might want to hide history. Keeping it but warning. */}
                           <button
                             onClick={() => setDeleteConfirm({ show: true, id: order._id, title: `${order.carId.brand} ${order.carId.model} (History)` })}
@@ -210,32 +210,110 @@ const DealerSoldInventory = () => {
         )
       }
 
-      {/* --- EYE (VIEW MODAL) --- */}
-      {
-        selectedCar && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
-                <h2 className="text-xl font-bold">{selectedCar.brand} {selectedCar.model}</h2>
-                <button onClick={() => setSelectedCar(null)} className="p-2 hover:bg-gray-100 rounded-full"><X /></button>
+      {/* --- EYE (VIEW MODAL - UPDATED WITH ORDER DETAILS) --- */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            {/* Modal Header */}
+            <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Order Details</h2>
+                <p className="text-xs text-gray-500 font-mono mt-1">ID: {selectedOrder._id}</p>
               </div>
-              <div className="p-6">
-                <img src={`http://localhost:3000${selectedCar.images?.[0]}`} className="w-full h-64 object-cover rounded-2xl mb-6 shadow-md" alt="Car" />
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-                  <DetailBox label="Year" value={selectedCar.year} />
-                  <DetailBox label="Fuel" value={selectedCar.fuelType} />
-                  <DetailBox label="Transmission" value={selectedCar.transmission} />
-                  <DetailBox label="Mileage" value={`${selectedCar.mileage} KM/L`} />
-                  <DetailBox label="Color" value={selectedCar.color} />
-                  <DetailBox label="Category" value={selectedCar.category} />
+              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition"><X size={20} /></button>
+            </div>
+
+            <div className="p-6 space-y-8">
+              {/* SECTION 1: VEHICLE INFORMATION */}
+              <div>
+                <h3 className="flex items-center gap-2 font-bold text-gray-900 text-sm uppercase tracking-wider mb-4 border-b pb-2">
+                  <Car size={16} className="text-blue-600" /> Vehicle Information
+                </h3>
+                <div className="flex flex-col sm:flex-row gap-6">
+                  <img
+                    src={`http://localhost:3000${selectedOrder.carId?.images?.[0]}`}
+                    className="w-full sm:w-48 h-32 object-cover rounded-xl shadow-sm border border-gray-100"
+                    alt="Car"
+                  />
+                  <div className="flex-1 space-y-3">
+                    <div>
+                      <div className="text-lg font-black text-gray-900">{selectedOrder.carId?.brand} {selectedOrder.carId?.model}</div>
+                      <div className="text-sm text-gray-500">{selectedOrder.carId?.year} • {selectedOrder.carId?.fuelType}</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 text-xs">
+                      <div className="bg-gray-50 p-2 rounded-lg">
+                        <span className="text-gray-400 block mb-0.5">Transmission</span>
+                        <span className="font-bold text-gray-700">{selectedOrder.carId?.transmission}</span>
+                      </div>
+                      <div className="bg-gray-50 p-2 rounded-lg">
+                        <span className="text-gray-400 block mb-0.5">Color</span>
+                        <span className="font-bold text-gray-700">{selectedOrder.carId?.color}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="font-bold text-gray-400 uppercase text-[10px] tracking-widest mb-2">Description</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{selectedCar.description}</p>
+              </div>
+
+              {/* SECTION 2: BUYER & SHIPPING DETAILS */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <h3 className="flex items-center gap-2 font-bold text-gray-900 text-sm uppercase tracking-wider mb-4 border-b pb-2">
+                    <User size={16} className="text-purple-600" /> Buyer Details
+                  </h3>
+                  <div className="space-y-4">
+                    <DetailBox label="Full Name" value={selectedOrder.customerDetails?.fullName || selectedOrder.userId?.Name || "N/A"} />
+                    <DetailBox label="Email Address" value={selectedOrder.userId?.Email || "N/A"} />
+                    <DetailBox label="Phone Number" value={selectedOrder.customerDetails?.phone || selectedOrder.userId?.Phone || "N/A"} />
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="flex items-center gap-2 font-bold text-gray-900 text-sm uppercase tracking-wider mb-4 border-b pb-2">
+                    <CheckCircle2 size={16} className="text-green-600" /> Shipping Address
+                  </h3>
+                  {selectedOrder.customerDetails?.address ? (
+                    <div className="bg-gray-50 p-4 rounded-xl text-sm text-gray-700 leading-relaxed border border-gray-100">
+                      <div className="font-bold mb-1">
+                        {selectedOrder.customerDetails.address}
+                      </div>
+                      <div>
+                        {selectedOrder.customerDetails.city}, {selectedOrder.customerDetails.zipCode}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-gray-400 italic text-sm">No shipping address recorded.</div>
+                  )}
+                </div>
+              </div>
+
+              {/* SECTION 3: PAYMENT INFORMATION */}
+              <div>
+                <h3 className="flex items-center gap-2 font-bold text-gray-900 text-sm uppercase tracking-wider mb-4 border-b pb-2">
+                  <div className="text-green-600 font-bold">₹</div> Payment Information
+                </h3>
+                <div className="bg-green-50/50 p-5 rounded-2xl border border-green-100 grid grid-cols-2 md:grid-cols-4 gap-6">
+                  <div>
+                    <div className="text-xs text-green-700/60 uppercase font-bold mb-1">Amount</div>
+                    <div className="text-lg font-black text-green-800">₹{selectedOrder.amount?.toLocaleString('en-IN')}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-green-700/60 uppercase font-bold mb-1">Status</div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-200 text-green-800 text-xs font-bold">
+                      <CheckCircle2 size={10} /> {selectedOrder.status}
+                    </div>
+                  </div>
+                  <div className="col-span-2">
+                    <div className="text-xs text-green-700/60 uppercase font-bold mb-1">Transaction ID</div>
+                    <div className="font-mono text-sm text-green-900 truncate" title={selectedOrder.paymentDetails?.transactionId}>
+                      {selectedOrder.paymentDetails?.transactionId || "N/A"}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        )
-      }
+        </div>
+      )}
     </div >
   );
 };

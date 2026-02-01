@@ -1,6 +1,7 @@
 const Car = require("../models/carSchema");
 const Enquiry = require("../models/enquirySchema")
 const Order = require("../models/orderSchema")
+const User = require("../models/userSchema")
 module.exports = {
   //create dealer profile-------------------------
   createDealerProfile: async (req, res) => {
@@ -190,6 +191,66 @@ module.exports = {
       }
 
       res.status(200).json({ success: true, message: "Sold vehicle record and car details deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
+  getDashboardStats: async (req, res) => {
+    try {
+      const dealerId = req.user.id;
+
+      const [orders, cars, enquiries] = await Promise.all([
+        Order.find({ dealerId }),
+        Car.find({ dealerId }),
+        Enquiry.find({ dealerId })
+      ]);
+
+      const totalRevenue = orders.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+      const totalCarsSold = orders.length;
+      const activeInventory = cars.length;
+      const totalEnquiries = enquiries.length;
+
+      res.status(200).json({
+        success: true,
+        stats: {
+          totalRevenue,
+          totalCarsSold,
+          activeInventory,
+          totalEnquiries
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, message: "Failed to fetch dashboard stats" });
+    }
+  },
+
+  updateProfile: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { Name, Email, Phone } = req.body;
+
+      const userId = req.user.id;
+      if (id !== userId) {
+        return res.status(403).json({ success: false, message: "Unauthorized action" });
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        id,
+        { Name, Email, Phone },
+        { new: true, runValidators: true }
+      ).select("-Password");
+
+      if (!updatedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Profile updated successfully",
+        user: updatedUser
+      });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }

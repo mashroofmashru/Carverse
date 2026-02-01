@@ -13,4 +13,6 @@ router.get('/get-enquiries', auth, authorize(["dealer"]), dealerHelpers.getEnqui
 router.delete('/delete-car/:id', auth, authorize(["dealer"]), dealerHelpers.deleteCar);
 router.delete('/delete-enquiry/:id', auth, authorize(["dealer"]), dealerHelpers.deleteEnquiry);
 router.delete('/delete-order-car/:id', auth, authorize(["dealer"]), dealerHelpers.deleteOrder);
+router.get('/get-dashboard-stats', auth, authorize(["dealer"]), dealerHelpers.getDashboardStats);
+router.put('/update-profile/:id', auth, authorize(["dealer"]), dealerHelpers.updateProfile);
 module.exports = router;

@@ -73,7 +73,7 @@ const DealerInventory = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col font-inter text-gray-900">
-      <Header title="Admin Control Center" />
+      <Header title="Dealer Control Center" />
 
       <div className="flex flex-1">
         <SideBar links={DEALER_LINKS} />
