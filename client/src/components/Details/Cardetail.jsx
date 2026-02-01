@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
 import {
   Gauge,
@@ -16,9 +17,11 @@ const BASE_URL = "http://localhost:3000";
 
 const CarDetailPage = ({ car }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [mainImage, setMainImage] = useState("");
   const [activeThumbnailId, setActiveThumbnailId] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const [name, setName] = useState(user?.Name || "");
   const [email, setEmail] = useState(user?.Email || "");
@@ -97,11 +100,10 @@ const CarDetailPage = ({ car }) => {
                 <button
                   key={img.id}
                   onClick={() => changeImage(img.src, img.id)}
-                  className={`h-24 border-2 rounded-lg ${
-                    img.id === activeThumbnailId
-                      ? "border-blue-600"
-                      : "border-transparent opacity-60"
-                  }`}
+                  className={`h-24 border-2 rounded-lg ${img.id === activeThumbnailId
+                    ? "border-blue-600"
+                    : "border-transparent opacity-60"
+                    }`}
                 >
                   <img src={img.src} className="w-full h-full object-cover" />
                 </button>
@@ -131,9 +133,31 @@ const CarDetailPage = ({ car }) => {
 
           <div className="bg-white p-6 rounded-2xl shadow">
             <p className="text-gray-500 text-sm">Price</p>
-            <p className="text-4xl font-bold text-blue-600">
+            <p className="text-4xl font-bold text-blue-600 mb-4">
               ₹{car.price.toLocaleString()}
             </p>
+            {car.status === "SOLD" ? (
+              <button
+                disabled
+                className="w-full bg-gray-400 text-white py-3 rounded-lg cursor-not-allowed font-bold"
+              >
+                SOLD OUT
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  if (!user) {
+                    alert("Please login to buy");
+                    navigate("/login");
+                    return;
+                  }
+                  setShowPaymentModal(true)
+                }}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold transition-colors"
+              >
+                Buy Now
+              </button>
+            )}
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow">
@@ -145,7 +169,7 @@ const CarDetailPage = ({ car }) => {
               Verified Dealer
             </div>
           </div>
-            
+
           <div className="bg-white p-6 rounded-2xl shadow">
             <h3 className="font-bold mb-4">Book now</h3>
 
@@ -192,7 +216,105 @@ const CarDetailPage = ({ car }) => {
 
         </div>
       </div>
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        car={car}
+        user={user}
+      />
     </main>
+  );
+};
+
+const PaymentModal = ({ isOpen, onClose, car, user }) => {
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  // Form State
+  const [formData, setFormData] = useState({
+    fullName: user?.Name || "",
+    address: "",
+    city: "",
+    zipCode: "",
+    phone: user?.Phone || ""
+  });
+
+  if (!isOpen) return null;
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handlePayment = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await api.post('/create-order', {
+        carId: car._id,
+        dealerId: car.dealerId?._id || car.dealerId,
+        amount: car.price,
+        customerDetails: formData // Send the address details
+      });
+      if (res.data.success) {
+        alert("Payment Successful! Car purchased.");
+        onClose();
+        navigate(0);
+      }
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Payment Failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-6 animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-2xl font-bold mb-4">Complete Purchase</h2>
+        <div className="mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100">
+          <h3 className="tex-sm text-blue-800 font-bold uppercase tracking-wider mb-1">Order Summary</h3>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-700 font-medium">{car.brand} {car.model}</span>
+            <span className="text-xl font-black text-blue-600">₹{car.price.toLocaleString()}</span>
+          </div>
+        </div>
+
+        <form onSubmit={handlePayment} className="space-y-4">
+          {/* Shipping Details */}
+          <div>
+            <h4 className="text-sm font-bold text-gray-900 mb-3 border-b pb-2">Shipping & Contact Details</h4>
+            <div className="space-y-3">
+              <input required name="fullName" value={formData.fullName} onChange={handleInputChange} placeholder="Full Name" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+              <input required name="phone" value={formData.phone} onChange={handleInputChange} placeholder="Phone Number" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+              <input required name="address" value={formData.address} onChange={handleInputChange} placeholder="Street Address" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+              <div className="grid grid-cols-2 gap-3">
+                <input required name="city" value={formData.city} onChange={handleInputChange} placeholder="City" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+                <input required name="zipCode" value={formData.zipCode} onChange={handleInputChange} placeholder="ZIP Code" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Details */}
+          <div className="pt-2">
+            <h4 className="text-sm font-bold text-gray-900 mb-3 border-b pb-2">Payment Information</h4>
+            <div className="space-y-3">
+              <input required type="text" placeholder="Card Number" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" pattern="\d{16}" title="16 digits" />
+              <div className="grid grid-cols-2 gap-3">
+                <input required type="text" placeholder="MM/YY" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+                <input required type="text" placeholder="CVV" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" pattern="\d{3}" title="3 digits" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-8 pt-4 border-t">
+            <button type="button" onClick={onClose} className="flex-1 py-3 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition">Cancel</button>
+            <button type="submit" disabled={loading} className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 shadow-lg shadow-blue-200 transition">
+              {loading ? "Processing..." : `Pay ₹${car.price.toLocaleString()}`}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 

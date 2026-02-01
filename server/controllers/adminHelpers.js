@@ -1,5 +1,6 @@
 const User = require("../models/userSchema");
 const Car = require("../models/carSchema");
+const Order = require("../models/orderSchema");
 module.exports = {
     getAllUsers: async (req, res) => {
         try {
@@ -30,6 +31,30 @@ module.exports = {
             res.status(500).json({
                 success: false,
                 message: "Failed to fetch cars",
+                error: error.message,
+            });
+        }
+    },
+
+    getSoldCars: async (req, res) => {
+        try {
+            // Find ALL orders (since admin sees everything)
+            const orders = await Order.find()
+                .populate("carId") // Get car details
+                .populate("userId", "Name Email Phone") // Get buyer details
+                .populate("dealerId", "Name Email Phone") // Get dealer details too
+                .sort({ createdAt: -1 });
+
+            res.status(200).json({
+                success: true,
+                count: orders.length,
+                orders, // Return orders instead of cars
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                success: false,
+                message: "Failed to fetch sold cars",
                 error: error.message,
             });
         }
@@ -115,7 +140,7 @@ module.exports = {
         try {
             const { id } = req.params;
             const { status } = req.body;
-            console.log(id,status)
+            console.log(id, status)
             const validStatuses = ['approved', 'blocked', 'pending'];
             if (!validStatuses.includes(status)) {
                 return res.status(400).json({
@@ -149,6 +174,27 @@ module.exports = {
                 success: false,
                 message: "Server error updating status"
             });
+        }
+    },
+    // Delete Order (Sold History)
+    deleteOrder: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const order = await Order.findById(id);
+
+            if (!order) {
+                return res.status(404).json({ success: false, message: "Order records not found" });
+            }
+
+            // Also delete the car associated with this order
+            if (order.carId) {
+                await Car.findByIdAndDelete(order.carId);
+            }
+            await Order.findByIdAndDelete(id);
+
+            res.status(200).json({ success: true, message: "Sold vehicle record and car details deleted successfully" });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
         }
     }
 };

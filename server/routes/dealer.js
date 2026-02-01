@@ -2,13 +2,15 @@ var express = require('express');
 const dealerHelpers = require('../controllers/dealerHelpers');
 const upload = require("../config/upload");
 var router = express.Router();
-var auth= require("../middlewares/authMiddleware.js");
-var authorize= require("../middlewares/authorizeMiddleware.js")
+var auth = require("../middlewares/authMiddleware.js");
+var authorize = require("../middlewares/authorizeMiddleware.js")
 
 //dealer routers--------
-router.post('/addcar',auth, authorize(["dealer"]),upload.array("images", 10), dealerHelpers.addCar);
-router.get('/get-inventory',auth,authorize(["dealer"]),dealerHelpers.getInventory);
-router.get('/get-enquiries',auth,authorize(["dealer"]),dealerHelpers.getEnquiries);
-router.delete('/delete-car/:id',auth,authorize(["dealer"]),dealerHelpers.deleteCar);
-router.delete('/delete-enquiry/:id',auth,authorize(["dealer"]),dealerHelpers.deleteEnquiry);
+router.post('/addcar', auth, authorize(["dealer"]), upload.array("images", 10), dealerHelpers.addCar);
+router.get('/get-inventory', auth, authorize(["dealer"]), dealerHelpers.getInventory);
+router.get('/get-sold-cars', auth, authorize(["dealer"]), dealerHelpers.getSoldCars);
+router.get('/get-enquiries', auth, authorize(["dealer"]), dealerHelpers.getEnquiries);
+router.delete('/delete-car/:id', auth, authorize(["dealer"]), dealerHelpers.deleteCar);
+router.delete('/delete-enquiry/:id', auth, authorize(["dealer"]), dealerHelpers.deleteEnquiry);
+router.delete('/delete-order-car/:id', auth, authorize(["dealer"]), dealerHelpers.deleteOrder);
 module.exports = router;

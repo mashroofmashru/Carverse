@@ -14,7 +14,9 @@ import VehicleDetails from './pages/Details'
 import AdminDashBoard from './pages/admin/AdminDashBoard'
 import ManageUser from './pages/admin/ManageUsers'
 import AdminInventory from './pages/admin/AdminInventory'
+import AdminSoldInventory from './pages/admin/AdminSoldInventory'
 import DealerInventory from './pages/Dealer/DealerInventory'
+import DealerSoldInventory from './pages/Dealer/DealerSoldInventory'
 import AdminSettings from './pages/admin/AdminSettings'
 import DealerEnquiries from './pages/Dealer/DealerEnquiries'
 import ProtectedRoute from './pages/auth/ProtectedRoute'
@@ -26,11 +28,11 @@ function App() {
       <Routes>
         {/* UserRouters */}
         <Route path="/" element={<Home />} />
-        <Route path="/details" element={<Details/>} />
-        <Route path="/viewInventory" element={<InventoryPage/>} />
-        <Route path="/about-us" element={<AboutUsPage/>}/>
-        <Route path='/login' element={<LoginPage/>}/>
-        <Route path='/signup' element={<SignupPage/>}/> 
+        <Route path="/details" element={<Details />} />
+        <Route path="/viewInventory" element={<InventoryPage />} />
+        <Route path="/about-us" element={<AboutUsPage />} />
+        <Route path='/login' element={<LoginPage />} />
+        <Route path='/signup' element={<SignupPage />} />
         <Route path="/details/:id" element={<VehicleDetails />} />
 
 
@@ -38,6 +40,7 @@ function App() {
         <Route element={<ProtectedRoute allowedRoles={['dealer']} />}>
           <Route path='/dealer' element={<DealerDashboard />} />
           <Route path='/dealer/cars' element={<DealerInventory />} />
+          <Route path='/dealer/sold-cars' element={<DealerSoldInventory />} />
           <Route path='/dealer/enquiries' element={<DealerEnquiries />} />
         </Route>
 
@@ -46,6 +49,7 @@ function App() {
           <Route path="/admin" element={<AdminDashBoard />} />
           <Route path="/admin/users" element={<ManageUser />} />
           <Route path="/admin/cars" element={<AdminInventory />} />
+          <Route path="/admin/sold-cars" element={<AdminSoldInventory />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
       </Routes>

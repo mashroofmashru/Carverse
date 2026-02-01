@@ -13,7 +13,7 @@ const InventorySection = () => {
       try {
         const res = await api.get("/featuredproducts");
         console.log(res.data)
-        setCars(res.data.cars);
+        setCars(res.data.cars.filter(car => car.status !== "SOLD"));
       } catch (err) {
         console.error(err);
       } finally {

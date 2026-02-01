@@ -1,5 +1,6 @@
 const Car = require("../models/carSchema");
 const Enquiry = require("../models/enquirySchema")
+const Order = require("../models/orderSchema")
 module.exports = {
   //create dealer profile-------------------------
   createDealerProfile: async (req, res) => {
@@ -83,7 +84,7 @@ module.exports = {
   //getInventory----------------------------------
   getInventory: async (req, res) => {
     try {
-      const cars = await Car.find({dealerId: req.user.id});
+      const cars = await Car.find({ dealerId: req.user.id });
 
       res.status(200).json({
         success: true,
@@ -100,7 +101,29 @@ module.exports = {
     }
   },
 
-  //get enquaries
+  // get orders -------------------------------------
+  getSoldCars: async (req, res) => {
+    try {
+      const orders = await Order.find({ dealerId: req.user.id })
+        .populate("carId")
+        .populate("userId", "Name Email Phone")
+        .sort({ createdAt: -1 });
+
+      res.status(200).json({
+        success: true,
+        count: orders.length,
+        orders,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch sold cars history",
+        error: error.message,
+      });
+    }
+  },
+
+  //get enquaries -------------------------
   getEnquiries: async (req, res) => {
     try {
       const enquiries = await Enquiry.find({
@@ -147,6 +170,28 @@ module.exports = {
         success: false,
         message: "Failed to delete enquiry",
       });
+    }
+  },
+  // Delete Order (Sold History)
+  deleteOrder: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const order = await Order.findById(id);
+
+      if (!order) {
+        return res.status(404).json({ success: false, message: "Order records not found" });
+      }
+
+      await Order.findByIdAndDelete(id);
+
+      // Also delete the car associated with this order
+      if (order.carId) {
+        await Car.findByIdAndDelete(order.carId);
+      }
+
+      res.status(200).json({ success: true, message: "Sold vehicle record and car details deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
     }
   }
 };

@@ -1,5 +1,6 @@
 const Car = require("../models/carSchema");
 const Enquiry = require("../models/enquirySchema")
+const Order = require("../models/orderSchema")
 const axios = require('axios');
 module.exports = {
     getFeaturedCars: async (req, res, next) => {
@@ -63,7 +64,6 @@ module.exports = {
         }
     },
 
-    //seach nearest service centers-----------------------
     searchServiceCenters: async (req, res) => {
         try {
             const { locationName } = req.query;
@@ -150,7 +150,6 @@ module.exports = {
         }
     },
 
-    //create an query------------------------------------
     createEnquery: async (req, res) => {
         try {
             const { carId, dealerId, name, email, phone, message } = req.body;
@@ -182,6 +181,51 @@ module.exports = {
             res.status(500).json({
                 success: false,
                 message: "Failed to send enquiry",
+            });
+        }
+    },
+
+    createOrder: async (req, res) => {
+        try {
+            const { carId, dealerId, amount } = req.body;
+            const userId = req.user.id;
+
+            const car = await Car.findById(carId);
+            if (!car) {
+                return res.status(404).json({ success: false, message: "Car not found" });
+            }
+            if (car.status === "SOLD") {
+                return res.status(400).json({ success: false, message: "Car is already sold" });
+            }
+
+            const order = await Order.create({
+                carId,
+                userId,
+                dealerId,
+                amount,
+                status: "COMPLETED",
+                paymentDetails: {
+                    method: "Credit Card",
+                    transactionId: "TXN" + Date.now(),
+                },
+                customerDetails: req.body.customerDetails
+            });
+
+            car.status = "SOLD";
+            await car.save();
+
+            res.status(201).json({
+                success: true,
+                message: "Order placed successfully! Car is now sold.",
+                order,
+            });
+
+        } catch (err) {
+            console.error("Order error:", err);
+            res.status(500).json({
+                success: false,
+                message: "Failed to place order",
+                error: err.message
             });
         }
     }

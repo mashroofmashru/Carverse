@@ -36,6 +36,9 @@ const InventoryPage = () => {
   const filteredCars = useMemo(() => {
     let result = cars.filter(car => {
       const s = searchTerm.toLowerCase();
+      // Filter sold cars
+      if (car.status === "SOLD") return false;
+
       return s === "" ||
         car.title?.toLowerCase().includes(s) ||
         car.brand?.toLowerCase().includes(s) ||

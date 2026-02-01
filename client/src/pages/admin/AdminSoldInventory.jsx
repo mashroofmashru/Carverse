@@ -2,20 +2,19 @@ import React, { useState, useEffect } from "react";
 import {
   Car, Search, Eye, Trash2,
   Fuel, Settings2, Gauge, Palette, X,
-  AlertCircle, CheckCircle2
+  AlertCircle, CheckCircle2, User, Calendar
 } from "lucide-react";
 import Header from "../../components/common/Header";
 import SideBar from "../../components/common/SideBar";
 import DetailBox from "../../components/Dashboard/DetailBox";
 import api from "../../config/server";
-import { DEALER_LINKS } from "../../constants/Links";
+import { ADMIN_LINKS } from "../../constants/Links";
 
-const DealerInventory = () => {
+const AdminSoldInventory = () => {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all"); // New Status Filter
   const [selectedCar, setSelectedCar] = useState(null);
 
   // --- Alert & Notification States ---
@@ -28,8 +27,8 @@ const DealerInventory = () => {
 
   const fetchInventory = async () => {
     try {
-      const res = await api.get("/dealer/get-inventory");
-      setInventory(res.data.cars);
+      const res = await api.get("/admin/get-sold-cars");
+      setInventory(res.data.orders);
     } catch (err) {
       console.error("Error fetching inventory:", err);
     } finally {
@@ -46,8 +45,8 @@ const DealerInventory = () => {
   // --- OPERATION: CONFIRMED DELETE ---
   const handleConfirmDelete = async () => {
     try {
-      await api.delete(`/dealer/delete-car/${deleteConfirm.id}`);
-      setInventory(inventory.filter(car => car._id !== deleteConfirm.id));
+      await api.delete(`/admin/delete-order-car/${deleteConfirm.id}`);
+      setInventory(inventory.filter(order => order._id !== deleteConfirm.id));
       showToast("Vehicle deleted successfully", "success");
     } catch (err) {
       showToast(err.response?.data?.message || "Failed to delete vehicle", "error");
@@ -57,18 +56,13 @@ const DealerInventory = () => {
   };
 
   // Filter Logic
-  const filteredCars = (Array.isArray(inventory) ? inventory : []).filter((car) => {
+  const filteredOrders = (Array.isArray(inventory) ? inventory : []).filter((order) => {
+    if (!order.carId) return false;
     const matchesSearch =
-      car.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      car.model?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || car.category === categoryFilter;
-    const matchesStatus = statusFilter === "all"
-      ? true
-      : statusFilter === "sold"
-        ? car.status === "SOLD"
-        : car.status !== "SOLD";
-
-    return matchesSearch && matchesCategory && matchesStatus;
+      order.carId.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.carId.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.userId?.Name?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
   });
 
   return (
@@ -76,11 +70,11 @@ const DealerInventory = () => {
       <Header title="Admin Control Center" />
 
       <div className="flex flex-1">
-        <SideBar links={DEALER_LINKS} />
+        <SideBar links={ADMIN_LINKS} />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-extrabold mb-8">Master Inventory</h1>
+            <h1 className="text-2xl font-extrabold mb-8">Sold Vehicles History</h1>
 
             {/* Filters Bar */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4">
@@ -105,17 +99,6 @@ const DealerInventory = () => {
                 <option value="HATCHBACK">HATCHBACK</option>
                 <option value="ELECTRIC">ELECTRIC</option>
               </select>
-
-              {/* Status Filter */}
-              <select
-                className="bg-gray-50 border-none rounded-xl px-4 py-2 text-sm font-semibold outline-none cursor-pointer"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">All Status</option>
-                <option value="available">Available</option>
-                <option value="sold">Sold</option>
-              </select>
             </div>
 
             {/* Inventory Table */}
@@ -124,48 +107,65 @@ const DealerInventory = () => {
                 <thead>
                   <tr className="bg-gray-50/50 border-b border-gray-200">
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Vehicle Details</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Specs</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Pricing</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Status</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Buyer Info</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Dealer</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Sale Price</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Sale Date</th>
                     <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {loading ? (
-                    <tr><td colSpan="5" className="text-center py-20 text-gray-400 animate-pulse">Loading Inventory...</td></tr>
-                  ) : filteredCars.map((car) => (
-                    <tr key={car._id} className="hover:bg-blue-50/30 transition-colors group">
+                    <tr><td colSpan="6" className="text-center py-20 text-gray-400 animate-pulse">Loading Inventory...</td></tr>
+                  ) : filteredOrders.length === 0 ? (
+                    <tr><td colSpan="6" className="text-center py-20 text-gray-400">No sold vehicles history found.</td></tr>
+                  ) : filteredOrders.map((order) => (
+                    <tr key={order._id} className="hover:bg-blue-50/30 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <img
-                            src={`http://localhost:3000${car.images?.[0]}`}
+                            src={`http://localhost:3000${order.carId.images?.[0]}`}
                             className="w-20 h-14 object-cover rounded-lg"
-                            alt={car.title}
+                            alt={order.carId.title}
                           />
                           <div>
-                            <div className="font-bold text-gray-900">{car.brand} {car.model}</div>
-                            <div className="text-[11px] text-gray-500">{car.year}</div>
+                            <div className="font-bold text-gray-900">{order.carId.brand} {order.carId.model}</div>
+                            <div className="text-[11px] text-gray-500">{order.carId.year} • {order.carId.fuelType}</div>
+                            <div className="mt-1 inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700">SOLD</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                            {order.userId?.Name?.charAt(0) || "U"}
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-gray-900">{order.customerDetails?.fullName || order.userId?.Name || "Unknown"}</div>
+                            <div className="text-xs text-gray-500">{order.customerDetails?.city ? `${order.customerDetails.city}, ${order.customerDetails.zipCode}` : order.userId?.Email}</div>
+                            {order.customerDetails?.address && <div className="text-[10px] text-gray-400 mt-0.5 truncate max-w-[150px]">{order.customerDetails.address}</div>}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-xs">
-                        <div className="flex items-center gap-1"><Fuel size={12} /> {car.fuelType}</div>
-                        <div className="flex items-center gap-1 mt-1"><Settings2 size={12} /> {car.transmission}</div>
+                        <div className="font-bold">{order.dealerId?.Name}</div>
+                        <div className="text-gray-400 text-[10px]">{order.dealerId?.Email}</div>
                       </td>
                       <td className="px-6 py-4 font-bold text-sm">
-                        ₹{car.price.toLocaleString('en-IN')}
+                        ₹{order.amount.toLocaleString('en-IN')}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${car.status === 'SOLD' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                          {car.status === 'SOLD' ? 'SOLD' : 'AVAILABLE'}
-                        </span>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-2">
+                          <Calendar size={14} />
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => setSelectedCar(car)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><Eye size={18} /></button>
+                          <button onClick={() => setSelectedCar(order.carId)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><Eye size={18} /></button>
                           {/* UPDATED DELETE BUTTON */}
                           <button
-                            onClick={() => setDeleteConfirm({ show: true, id: car._id, title: `${car.brand} ${car.model}` })}
+                            onClick={() => setDeleteConfirm({ show: true, id: order._id, title: `${order.carId.brand} ${order.carId.model} (History)` })}
                             className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
                           >
                             <Trash2 size={18} />
@@ -189,9 +189,9 @@ const DealerInventory = () => {
               <div className="p-4 bg-red-50 text-red-600 rounded-2xl mb-4">
                 <AlertCircle size={32} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Remove Vehicle?</h3>
+              <h3 className="text-xl font-bold text-gray-900">Remove Vehicle Record?</h3>
               <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-                You are about to delete <span className="font-bold text-gray-800">{deleteConfirm.title}</span>. This data will be permanently removed from the server.
+                You are about to delete the history of <span className="font-bold text-gray-800">{deleteConfirm.title}</span>. This data will be permanently removed.
               </p>
               <div className="flex gap-3 w-full mt-8">
                 <button
@@ -248,5 +248,4 @@ const DealerInventory = () => {
     </div>
   );
 };
-
-export default DealerInventory;
+export default AdminSoldInventory;

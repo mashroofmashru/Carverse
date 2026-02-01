@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Car, Search, Eye, Trash2, 
+import {
+  Car, Search, Eye, Trash2,
   Fuel, Settings2, Gauge, Palette, X,
   AlertCircle, CheckCircle2 // Added for alerts
 } from "lucide-react";
@@ -15,6 +15,7 @@ const AdminInventory = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all"); // New Status Filter
   const [selectedCar, setSelectedCar] = useState(null);
 
   // --- Alert & Notification States ---
@@ -49,7 +50,7 @@ const AdminInventory = () => {
       setInventory(inventory.filter(car => car._id !== deleteConfirm.id));
       showToast("Vehicle deleted successfully", "success");
     } catch (err) {
-      showToast(err.response?.data?.message ||"Failed to delete vehicle", "error");
+      showToast(err.response?.data?.message || "Failed to delete vehicle", "error");
     } finally {
       setDeleteConfirm({ show: false, id: null, title: "" });
     }
@@ -57,19 +58,25 @@ const AdminInventory = () => {
 
   // Filter Logic
   const filteredCars = (Array.isArray(inventory) ? inventory : []).filter((car) => {
-    const matchesSearch = 
-      car.brand?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch =
+      car.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       car.model?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === "all" || car.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const matchesStatus = statusFilter === "all"
+      ? true
+      : statusFilter === "sold"
+        ? car.status === "SOLD"
+        : car.status !== "SOLD";
+
+    return matchesSearch && matchesCategory && matchesStatus;
   });
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col font-inter text-gray-900">
       <Header title="Admin Control Center" />
-      
+
       <div className="flex flex-1">
-        <SideBar links={ADMIN_LINKS}/>
+        <SideBar links={ADMIN_LINKS} />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
@@ -79,15 +86,15 @@ const AdminInventory = () => {
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Search brand or model..." 
+                <input
+                  type="text"
+                  placeholder="Search brand or model..."
                   className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <select 
+              <select
                 className="bg-gray-50 border-none rounded-xl px-4 py-2 text-sm font-semibold outline-none cursor-pointer"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
@@ -97,6 +104,17 @@ const AdminInventory = () => {
                 <option value="SEDAN">SEDAN</option>
                 <option value="HATCHBACK">HATCHBACK</option>
                 <option value="ELECTRIC">ELECTRIC</option>
+              </select>
+
+              {/* Status Filter */}
+              <select
+                className="bg-gray-50 border-none rounded-xl px-4 py-2 text-sm font-semibold outline-none cursor-pointer"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">All Status</option>
+                <option value="available">Available</option>
+                <option value="sold">Sold</option>
               </select>
             </div>
 
@@ -114,15 +132,15 @@ const AdminInventory = () => {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {loading ? (
-                     <tr><td colSpan="5" className="text-center py-20 text-gray-400 animate-pulse">Loading Inventory...</td></tr>
+                    <tr><td colSpan="5" className="text-center py-20 text-gray-400 animate-pulse">Loading Inventory...</td></tr>
                   ) : filteredCars.map((car) => (
                     <tr key={car._id} className="hover:bg-blue-50/30 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <img 
-                            src={`http://localhost:3000${car.images?.[0]}`} 
-                            className="w-20 h-14 object-cover rounded-lg" 
-                            alt={car.title} 
+                          <img
+                            src={`http://localhost:3000${car.images?.[0]}`}
+                            className="w-20 h-14 object-cover rounded-lg"
+                            alt={car.title}
                           />
                           <div>
                             <div className="font-bold text-gray-900">{car.brand} {car.model}</div>
@@ -131,22 +149,22 @@ const AdminInventory = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-xs">
-                        <div className="flex items-center gap-1"><Fuel size={12}/> {car.fuelType}</div>
-                        <div className="flex items-center gap-1 mt-1"><Settings2 size={12}/> {car.transmission}</div>
+                        <div className="flex items-center gap-1"><Fuel size={12} /> {car.fuelType}</div>
+                        <div className="flex items-center gap-1 mt-1"><Settings2 size={12} /> {car.transmission}</div>
                       </td>
                       <td className="px-6 py-4 font-bold text-sm">
                         ₹{car.price.toLocaleString('en-IN')}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${car.status === 'AVAILABLE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                          {car.status}
+                        <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${car.status === 'SOLD' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                          {car.status === 'SOLD' ? 'SOLD' : 'AVAILABLE'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
                           <button onClick={() => setSelectedCar(car)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><Eye size={18} /></button>
                           {/* UPDATED DELETE BUTTON */}
-                          <button 
+                          <button
                             onClick={() => setDeleteConfirm({ show: true, id: car._id, title: `${car.brand} ${car.model}` })}
                             className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
                           >
@@ -176,13 +194,13 @@ const AdminInventory = () => {
                 You are about to delete <span className="font-bold text-gray-800">{deleteConfirm.title}</span>. This data will be permanently removed from the server.
               </p>
               <div className="flex gap-3 w-full mt-8">
-                <button 
+                <button
                   onClick={() => setDeleteConfirm({ show: false, id: null, title: "" })}
                   className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   onClick={handleConfirmDelete}
                   className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 shadow-lg shadow-red-200 transition"
                 >
@@ -196,9 +214,8 @@ const AdminInventory = () => {
 
       {/* --- NOTIFICATION TOAST --- */}
       {notification.show && (
-        <div className={`fixed bottom-8 right-8 z-[70] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-right duration-300 ${
-          notification.type === 'success' ? 'bg-white border-green-100 text-green-800' : 'bg-white border-red-100 text-red-800'
-        }`}>
+        <div className={`fixed bottom-8 right-8 z-[70] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-right duration-300 ${notification.type === 'success' ? 'bg-white border-green-100 text-green-800' : 'bg-white border-red-100 text-red-800'
+          }`}>
           {notification.type === 'success' ? <CheckCircle2 className="text-green-500" /> : <AlertCircle className="text-red-500" />}
           <span className="font-bold text-sm">{notification.message}</span>
         </div>
