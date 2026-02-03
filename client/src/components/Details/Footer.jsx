@@ -9,7 +9,7 @@ const Footer = () => {
                     <Car className="text-primary" />
                     <span className="text-xl font-bold">AutoNext</span>
                 </div>
-                <p className="text-gray-400 text-sm">&copy; 2025 AutoNext. All rights reserved.</p>
+                <p className="text-gray-400 text-sm">&copy; 2026 AutoNext. All rights reserved.</p>
             </div>
         </footer>
     );

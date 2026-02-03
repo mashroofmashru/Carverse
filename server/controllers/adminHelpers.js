@@ -1,7 +1,59 @@
 const User = require("../models/userSchema");
 const Car = require("../models/carSchema");
 const Order = require("../models/orderSchema");
+const Contact = require("../models/contactSchema");
 module.exports = {
+    getContacts: async (req, res) => {
+        try {
+            const contacts = await Contact.find().sort({ createdAt: -1 });
+
+            res.status(200).json({
+                success: true,
+                count: contacts.length,
+                contacts,
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                success: false,
+                message: "Failed to fetch messages",
+                error: error.message,
+            });
+        }
+    },
+
+    updateContactStatus: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+
+            const contact = await Contact.findByIdAndUpdate(
+                id,
+                { status },
+                { new: true }
+            );
+
+            if (!contact) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Message not found"
+                });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: "Message status updated",
+                contact
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                success: false,
+                message: "Failed to update status",
+                error: error.message
+            });
+        }
+    },
     getAllUsers: async (req, res) => {
         try {
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../../context/authContext";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { LogOut, User } from "lucide-react";
 
@@ -22,7 +22,7 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-        
+
         {/* Logo */}
         <div className="flex items-center gap-2">
           <i className="fa-solid fa-car-side text-2xl text-blue-600"></i>

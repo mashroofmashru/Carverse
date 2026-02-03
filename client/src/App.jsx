@@ -13,7 +13,9 @@ import SignupPage from './pages/Signup'
 import VehicleDetails from './pages/Details'
 import AdminDashBoard from './pages/admin/AdminDashBoard'
 import ManageUser from './pages/admin/ManageUsers'
+import AdminMessages from './pages/admin/AdminMessages'
 import AdminInventory from './pages/admin/AdminInventory'
+
 import AdminSoldInventory from './pages/admin/AdminSoldInventory'
 import DealerInventory from './pages/Dealer/DealerInventory'
 import DealerSoldInventory from './pages/Dealer/DealerSoldInventory'
@@ -22,6 +24,7 @@ import DealerEnquiries from './pages/Dealer/DealerEnquiries'
 import DealerSettings from './pages/Dealer/DealerSettings'
 import ProtectedRoute from './pages/auth/ProtectedRoute'
 import DealerApproval from './pages/auth/DealerApproval'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -37,6 +40,7 @@ function App() {
         <Route path='/login' element={<LoginPage />} />
         <Route path='/signup' element={<SignupPage />} />
         <Route path="/details/:id" element={<VehicleDetails />} />
+        <Route path="/profile" element={<ProtectedRoute allowedRoles={['user', 'admin', 'dealer']}><ProfilePage /></ProtectedRoute>} />
 
         {/* Dealer routers */}
         <Route path='/dealer/approval' element={<DealerApproval />} />
@@ -54,6 +58,7 @@ function App() {
           <Route path="/admin/users" element={<ManageUser />} />
           <Route path="/admin/cars" element={<AdminInventory />} />
           <Route path="/admin/sold-cars" element={<AdminSoldInventory />} />
+          <Route path="/admin/messages" element={<AdminMessages />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
       </Routes>

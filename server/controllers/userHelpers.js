@@ -1,8 +1,42 @@
 const Car = require("../models/carSchema");
 const Enquiry = require("../models/enquirySchema")
 const Order = require("../models/orderSchema")
+const Contact = require("../models/contactSchema")
+const User = require("../models/userSchema");
 const axios = require('axios');
 module.exports = {
+    submitContact: async (req, res) => {
+        try {
+            const { name, email, subject, message } = req.body;
+
+            if (!name || !email || !subject || !message) {
+                return res.status(400).json({
+                    success: false,
+                    message: "All fields are required",
+                });
+            }
+
+            const contact = await Contact.create({
+                name,
+                email,
+                subject,
+                message,
+            });
+
+            res.status(201).json({
+                success: true,
+                message: "Message sent successfully",
+                contact,
+            });
+        } catch (err) {
+            console.error("Contact error:", err);
+            res.status(500).json({
+                success: false,
+                message: "Failed to send message",
+                error: err.message,
+            });
+        }
+    },
     getFeaturedCars: async (req, res, next) => {
         try {
             const cars = await Car.find().populate("dealerId", "Name").limit(6);
@@ -228,6 +262,53 @@ module.exports = {
                 message: "Failed to place order",
                 error: err.message
             });
+        }
+    },
+    getUserOrders: async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const orders = await Order.find({ userId })
+                .populate("carId")
+                .populate("dealerId", "Name Email Phone")
+                .sort({ createdAt: -1 });
+
+            res.status(200).json({
+                success: true,
+                count: orders.length,
+                orders,
+            });
+        } catch (error) {
+            console.error("Fetch user orders error:", error);
+            res.status(500).json({
+                success: false,
+                message: "Failed to fetch orders",
+                error: error.message
+            });
+        }
+    },
+    updateProfile: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { Name, Email, Phone } = req.body;
+
+            // Find user by ID and update their info
+            const updatedUser = await User.findByIdAndUpdate(
+                id,
+                { Name, Email, Phone },
+                { new: true, runValidators: true }
+            ).select("-Password");
+
+            if (!updatedUser) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
+
+            res.status(200).json({
+                success: true,
+                message: "Profile updated on server",
+                user: updatedUser
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
         }
     }
 };

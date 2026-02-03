@@ -10,5 +10,8 @@ router.get('/getcardetails/:id', userHelpers.getCardetails);
 router.get('/service-centers/search', userHelpers.searchServiceCenters);
 router.post('/enquiry', auth, userHelpers.createEnquery);
 router.post('/create-order', auth, userHelpers.createOrder);
+router.post('/contact', userHelpers.submitContact);
+router.get('/orders', auth, userHelpers.getUserOrders);
+router.put('/update-profile/:id', auth, userHelpers.updateProfile);
 
 module.exports = router;

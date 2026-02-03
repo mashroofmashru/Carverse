@@ -5,6 +5,7 @@ export const ADMIN_LINKS = [
   { title: "User Management", path: "/admin/users", icon: Users2 },
   { title: "Inventory", path: "/admin/cars", icon: Car },
   { title: "Sold Cars", path: "/admin/sold-cars", icon: FileCheck },
+  { title: "Messages", path: "/admin/messages", icon: MessageSquareText },
   // { title: "Security Logs", path: "/admin/logs", icon: ShieldAlert },
   { title: "Settings", path: "/admin/settings", icon: Settings },
 ];
