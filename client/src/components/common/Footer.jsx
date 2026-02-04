@@ -3,21 +3,13 @@ import React from 'react';
 const Footer = () => {
   const footerLinks = [
     {
-      title: 'Inventory',
-      links: [
-        { name: 'New Arrivals', href: '#' },
-        { name: 'Best Sellers', href: '#' },
-        { name: 'Electric Vehicles', href: '#' },
-      ],
-    },
-    {
       title: 'Company',
       links: [
-        { name: 'About Us', href: '#' },
-        { name: 'Dealer Login', href: '#' },
-        { name: 'Contact Support', href: '#' },
+        { name: 'About Us', href: '/about-us' },
+        { name: 'Dealer Login', href: '/login' },
+        { name: 'Contact Support', href: '/about-us/#contact-us' },
       ],
-    },
+    }
   ];
 
   return (
@@ -46,21 +38,11 @@ const Footer = () => {
               </ul>
             </div>
           ))}
-
-          {/* Column 4: Social Links */}
-          <div>
-            <h4 className="font-bold text-gray-900 mb-4">Social</h4>
-            <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 bg-white shadow-sm rounded-full flex items-center justify-center text-gray-600 hover:text-primary hover:shadow-md transition"><i className="fa-brands fa-facebook-f"></i></a>
-              <a href="#" className="w-10 h-10 bg-white shadow-sm rounded-full flex items-center justify-center text-gray-600 hover:text-primary hover:shadow-md transition"><i className="fa-brands fa-twitter"></i></a>
-              <a href="#" className="w-10 h-10 bg-white shadow-sm rounded-full flex items-center justify-center text-gray-600 hover:text-primary hover:shadow-md transition"><i className="fa-brands fa-instagram"></i></a>
-            </div>
-          </div>
         </div>
-        
+
         {/* Copyright */}
         <div className="border-t border-gray-800 pt-8 text-center text-sm">
-          &copy; 2025 AutoNext. All rights reserved.
+          &copy; 2026 AutoNext. All rights reserved.
         </div>
       </div>
     </footer>

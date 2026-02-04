@@ -60,21 +60,6 @@ const AboutUsPage = () => {
               </p>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 text-center">
-              {[
-                { label: "Vehicles Sold", value: "15k+" },
-                { label: "Happy Clients", value: "12k+" },
-                { label: "Service Centers", value: "8" },
-                { label: "Years Experience", value: "15" },
-              ].map((stat, idx) => (
-                <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                  <div className="text-3xl font-bold text-primary mb-1">{stat.value}</div>
-                  <div className="text-sm text-gray-500 font-medium uppercase tracking-wider">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-
             {/* About Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
               {/* Our Story & Values */}
@@ -105,7 +90,7 @@ const AboutUsPage = () => {
                   <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                     <Send className="text-primary" size={24} /> Get in Touch
                   </h2>
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                  <form id="contact-us" onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
@@ -234,24 +219,80 @@ const AboutUsPage = () => {
                 {/* Awards Section */}
                 <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
                   <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                    <svg className="w-6 h-6 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                    <svg
+                      className="w-6 h-6 mr-2 text-primary"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
-                    Awards & Recognition
+                    How AutoNext Works
                   </h3>
+
                   <div className="space-y-4">
-                    <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
-                      <div className="bg-amber-100 text-amber-600 p-2 rounded-lg font-bold">2024</div>
+                    {/* Step 1 */}
+                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
+                      <div className="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                        1
+                      </div>
                       <div>
-                        <div className="font-bold text-gray-900 text-sm">Best Auto Dealer</div>
-                        <div className="text-xs text-gray-500">Consumer Choice Awards</div>
+                        <div className="font-semibold text-gray-900 text-sm">
+                          Search Cars
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Browse available cars using filters, images, and detailed listings
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
-                      <div className="bg-gray-200 text-gray-600 p-2 rounded-lg font-bold">2023</div>
+
+                    {/* Step 2 */}
+                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
+                      <div className="bg-green-100 text-green-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                        2
+                      </div>
                       <div>
-                        <div className="font-bold text-gray-900 text-sm">Top Digital Experience</div>
-                        <div className="text-xs text-gray-500">AutoTech Summit</div>
+                        <div className="font-semibold text-gray-900 text-sm">
+                          Order Cars
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Choose your car and place an order with transparent pricing
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step 3 */}
+                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
+                      <div className="bg-purple-100 text-purple-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                        3
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-900 text-sm">
+                          Submit an Enquiry
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Have questions or doubts? Fill out the enquiry form for assistance
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Step 4 */}
+                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
+                      <div className="bg-amber-100 text-amber-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                        4
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-900 text-sm">
+                          Contact Support
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Facing any issues? Reach out through the contact form for quick help
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -91,7 +91,7 @@ const carSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["AVAILABLE", "SOLD", "PENDING"],
+      enum: ["AVAILABLE", "SOLD"],
       default: "AVAILABLE",
     },
   },

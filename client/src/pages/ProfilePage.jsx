@@ -41,8 +41,9 @@ const ProfilePage = () => {
     const fetchOrders = async () => {
         setLoadingOrders(true);
         try {
-            const res = await api.get("/user/orders");
+            const res = await api.get("/orders");
             if (res.data.success) {
+                console.log(res.data.orders)
                 setOrders(res.data.orders);
             }
         } catch (err) {
@@ -214,7 +215,7 @@ const ProfilePage = () => {
                                                     {/* Car Image Placeholder or Data */}
                                                     <div className="w-full md:w-48 h-32 bg-gray-100 rounded-xl flex-shrink-0 relative overflow-hidden">
                                                         {order.carId?.images?.[0] ? (
-                                                            <img src={order.carId.images[0]} alt={order.carId.name} className="w-full h-full object-cover" />
+                                                            <img src={`http://localhost:3000${order.carId.images[0]}`} alt={order.carId.title} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <div className="flex items-center justify-center h-full text-gray-400">
                                                                 <Package size={32} />
@@ -225,11 +226,11 @@ const ProfilePage = () => {
                                                     <div className="flex-1">
                                                         <div className="flex justify-between items-start mb-2">
                                                             <div>
-                                                                <h3 className="text-lg font-bold text-gray-900">{order.carId?.Make} {order.carId?.Model}</h3>
-                                                                <p className="text-sm text-gray-500">{order.carId?.Year} • {order.carId?.FuelType}</p>
+                                                                <h3 className="text-lg font-bold text-gray-900">{order.carId?.title} {order.carId?.model}</h3>
+                                                                <p className="text-sm text-gray-500">{order.carId?.year} • {order.carId?.fuelType}</p>
                                                             </div>
                                                             <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold uppercase rounded-full">
-                                                                {order.status}
+                                                                {order.carId?.status}
                                                             </span>
                                                         </div>
 
@@ -294,14 +295,31 @@ const ProfilePage = () => {
                                 <div className="flex gap-4">
                                     <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                                         {selectedOrder.carId?.images?.[0] && (
-                                            <img src={selectedOrder.carId.images[0]} alt="Car" className="w-full h-full object-cover" />
+                                            <img src={`http://localhost:3000${selectedOrder.carId.images[0]}`} alt="Car" className="w-full h-full object-cover" />
                                         )}
                                     </div>
-                                    <div>
-                                        <h4 className="font-bold text-gray-900 text-lg">{selectedOrder.carId?.Make} {selectedOrder.carId?.Model}</h4>
-                                        <p className="text-gray-600 text-sm">{selectedOrder.carId?.Year} • {selectedOrder.carId?.Color}</p>
-                                        <p className="text-gray-500 text-xs mt-1">VIN: {selectedOrder.carId?.VIN || "N/A"}</p>
+                                    <div className="space-y-1">
+                                        <h4 className="font-bold text-gray-900 text-lg">
+                                            {selectedOrder.carId?.brand} {selectedOrder.carId?.title}
+                                        </h4>
+
+                                        <p className="text-gray-600 text-sm">
+                                            {selectedOrder.carId?.model} • {selectedOrder.carId?.year}
+                                        </p>
+
+                                        <p className="text-gray-600 text-sm">
+                                            Color: {selectedOrder.carId?.color} • Fuel: {selectedOrder.carId?.fuelType}
+                                        </p>
+
+                                        <p className="text-gray-600 text-sm">
+                                            Transmission: {selectedOrder.carId?.transmission} • Mileage: {selectedOrder.carId?.mileage} km
+                                        </p>
+
+                                        <p className="text-gray-600 text-sm">
+                                            Category: {selectedOrder.carId?.category}
+                                        </p>
                                     </div>
+
                                 </div>
                             </div>
 
@@ -345,6 +363,7 @@ const ProfilePage = () => {
                 </div>
             )}
 
+            {/* Footer Component */}
             <Footer />
             <Toast
                 isOpen={notification.show}

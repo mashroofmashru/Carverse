@@ -39,7 +39,7 @@ module.exports = {
     },
     getFeaturedCars: async (req, res, next) => {
         try {
-            const cars = await Car.find().populate("dealerId", "Name").limit(6);
+            const cars = await Car.find({ status: "AVAILABLE" }).populate("dealerId", "Name").limit(6);
 
             res.status(200).json({
                 success: true,
