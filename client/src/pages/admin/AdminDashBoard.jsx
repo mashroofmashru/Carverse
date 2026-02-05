@@ -72,7 +72,7 @@ const AdminDashBoard = () => {
               <StatCard title="Total Profit" value={`₹${formatCurrency(stats.totalProfit)}`} icon={TrendingUp} color="green" />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
+            {/* <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
               <div className="lg:col-span-2 space-y-6">
 
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -87,7 +87,7 @@ const AdminDashBoard = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </main>
       </div>

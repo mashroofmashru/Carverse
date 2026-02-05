@@ -105,7 +105,7 @@ const DealerDashboard = () => {
     const totalInventory = inventory.length;
     const totalSold = orders.length;
     const totalRevenue = orders.reduce((sum, order) => sum + (order.amount || 0), 0);
-
+    const totalProfit = stats.totalProfit;
     // Logo
     doc.setFontSize(24);
     doc.setTextColor(37, 99, 235);
@@ -134,9 +134,9 @@ const DealerDashboard = () => {
     doc.setFontSize(10);
     doc.setTextColor(0);
     doc.text(`Total Inventory: ${totalInventory}`, 14, 55);
-    doc.text(`Total Sales: ${totalSold}`, 80, 55);
-    doc.text(`Total Revenue: Rs. ${totalRevenue.toLocaleString('en-IN')}`, 140, 55);
-
+    doc.text(`Total Sales: ${totalSold}`, 50, 55);
+    doc.text(`Total Revenue: Rs. ${totalRevenue.toLocaleString('en-IN')}`, 80, 55);
+    doc.text(`Total Profit: Rs.${totalProfit.toLocaleString('en-IN')}`, 150, 55)
     doc.line(14, 61, 196, 61);
 
     // Section 1: Inventory
@@ -144,14 +144,15 @@ const DealerDashboard = () => {
     doc.setTextColor(40);
     doc.text("Current Inventory", 14, 70);
 
-    const inventoryColumns = ["Model", "Brand", "Year", "Price", "Color", "Fuel Type"];
+    const inventoryColumns = ["Model", "Brand", "Year", "Price", "Color", "Fuel Type", "status"];
     const inventoryRows = inventory.map(car => [
       car.model,
       car.brand,
       car.year,
       `Rs. ${car.price.toLocaleString('en-IN')}`,
       car.color,
-      car.fuelType
+      car.fuelType,
+      car.status
     ]);
 
     autoTable(doc, {
