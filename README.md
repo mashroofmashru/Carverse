@@ -65,6 +65,7 @@ The project is structured into three main components:
    PORT=3000
    MONGO_URI=your_mongodb_connection_string
    JWT_SECRET=your_super_secret_jwt_key
+   MAPS_API_KEY=4a1e626822b14eceb184d29c83ac0b2d
    ```
 4. Start the development server (uses `nodemon` for auto-restarting):
    ```bash
