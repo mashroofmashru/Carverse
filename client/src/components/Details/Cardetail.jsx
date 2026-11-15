@@ -16,7 +16,6 @@ import {
 import api from "../../config/server";
 import { getImageUrl } from "../../config/imageUrl";
 
-const BASE_URL = "http://localhost:3000";
 
 const CarDetailPage = ({ car }) => {
   const { user } = useAuth();
