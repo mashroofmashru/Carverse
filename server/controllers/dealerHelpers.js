@@ -2,6 +2,7 @@ const Car = require("../models/carSchema");
 const Enquiry = require("../models/enquirySchema")
 const Order = require("../models/orderSchema")
 const User = require("../models/userSchema")
+const { uploadImage, deleteImages } = require("../config/cloudinary");
 module.exports = {
   //create dealer profile-------------------------
   createDealerProfile: async (req, res) => {
@@ -36,8 +37,9 @@ module.exports = {
         });
       }
 
-      const images = req.files.map(
-        (file) => `/uploads/cars/${file.filename}`
+      // Upload all images to Cloudinary and keep their URLs
+      const images = await Promise.all(
+        req.files.map((file) => uploadImage(file))
       );
 
       // Profit Calculation Logic
@@ -82,6 +84,11 @@ module.exports = {
       if (!deletedCar) {
         return res.status(404).json({ success: false, message: "Car not found" });
       }
+
+      // Remove the car's images from Cloudinary (don't fail the delete if this errors)
+      deleteImages(deletedCar.images).catch((err) =>
+        console.error("Failed to delete car images from Cloudinary:", err.message)
+      );
 
       res.status(200).json({ success: true, message: "Vehicle deleted successfully" });
     } catch (error) {

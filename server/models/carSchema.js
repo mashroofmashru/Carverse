@@ -82,10 +82,12 @@ const carSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // Cloudinary URLs of the car's images
     images: [
       {
         type: String,
         required: true,
+        trim: true,
       },
     ],
 

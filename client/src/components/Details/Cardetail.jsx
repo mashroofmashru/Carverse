@@ -14,6 +14,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import api from "../../config/server";
+import { getImageUrl } from "../../config/imageUrl";
 
 const BASE_URL = "http://localhost:3000";
 
@@ -33,7 +34,7 @@ const CarDetailPage = ({ car }) => {
   const images =
     car?.images?.map((img, index) => ({
       id: index,
-      src: BASE_URL + img,
+      src: getImageUrl(img),
       alt: car?.title || "car",
     })) || [];
 

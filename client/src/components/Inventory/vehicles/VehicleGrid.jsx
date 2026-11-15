@@ -1,6 +1,7 @@
 // src/components/vehicles/VehicleGrid.jsx
 import React from "react";
 import VehicleCard from "./VehicleCard";
+import { getImageUrl } from "../../../config/imageUrl";
 
 const VehicleGrid = ({ vehicles }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -12,7 +13,7 @@ const VehicleGrid = ({ vehicles }) => (
                 fuelType:`${car.fuelType}`,
                 dealer: "Verified Dealer",
                 price: `₹${car.price}`,
-                images: `http://localhost:3000${car.images[0]}`
+                images: getImageUrl(car.images[0])
               }} />
     ))}
   </div>

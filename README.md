@@ -66,6 +66,10 @@ The project is structured into three main components:
    MONGO_URI=your_mongodb_connection_string
    JWT_SECRET=your_super_secret_jwt_key
    MAPS_API_KEY=4a1e626822b14eceb184d29c83ac0b2d
+   # Cloudinary (car image uploads)
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_api_key
+   CLOUDINARY_API_SECRET=your_api_secret
    ```
 4. Start the development server (uses `nodemon` for auto-restarting):
    ```bash

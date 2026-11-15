@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import CarCard from "../CarCard";
 import { useNavigate } from "react-router-dom";
 import api from "../../../config/server";
+import { getImageUrl } from "../../../config/imageUrl";
 
 const InventorySection = () => {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const InventorySection = () => {
                 details: `${car.category} • ${car.transmission} • ${car.fuelType}`,
                 dealer: `${car.dealerId.Name}`,
                 price: `₹${car.price}`,
-                imgUrl: `http://localhost:3000${car.images[0]}`,
+                imgUrl: getImageUrl(car.images[0]),
                 tag: "New",
                 tagColor: "bg-blue-600",
               }}

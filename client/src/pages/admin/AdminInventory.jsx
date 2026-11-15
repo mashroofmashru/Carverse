@@ -9,6 +9,7 @@ import SideBar from "../../components/common/SideBar";
 import DetailBox from "../../components/Dashboard/DetailBox";
 import api from "../../config/server";
 import { ADMIN_LINKS } from "../../constants/Links";
+import { getImageUrl } from "../../config/imageUrl";
 
 const AdminInventory = () => {
   const [inventory, setInventory] = useState([]);
@@ -138,7 +139,7 @@ const AdminInventory = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <img
-                            src={`http://localhost:3000${car.images?.[0]}`}
+                            src={getImageUrl(car.images?.[0])}
                             className="w-20 h-14 object-cover rounded-lg"
                             alt={car.title}
                           />
@@ -230,7 +231,7 @@ const AdminInventory = () => {
               <button onClick={() => setSelectedCar(null)} className="p-2 hover:bg-gray-100 rounded-full"><X /></button>
             </div>
             <div className="p-6">
-              <img src={`http://localhost:3000${selectedCar.images?.[0]}`} className="w-full h-64 object-cover rounded-2xl mb-6 shadow-md" alt="Car" />
+              <img src={getImageUrl(selectedCar.images?.[0])} className="w-full h-64 object-cover rounded-2xl mb-6 shadow-md" alt="Car" />
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
                 <DetailBox label="Year" value={selectedCar.year} />
                 <DetailBox label="Fuel" value={selectedCar.fuelType} />

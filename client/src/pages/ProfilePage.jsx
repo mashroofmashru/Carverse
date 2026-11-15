@@ -5,6 +5,7 @@ import Footer from "../components/Details/Footer";
 import Toast from "../components/common/Toast";
 import { useAuth } from "../context/AuthContext";
 import api from "../config/server";
+import { getImageUrl } from "../config/imageUrl";
 
 const ProfilePage = () => {
     const { user, login, token } = useAuth();
@@ -215,7 +216,7 @@ const ProfilePage = () => {
                                                     {/* Car Image Placeholder or Data */}
                                                     <div className="w-full md:w-48 h-32 bg-gray-100 rounded-xl flex-shrink-0 relative overflow-hidden">
                                                         {order.carId?.images?.[0] ? (
-                                                            <img src={`http://localhost:3000${order.carId.images[0]}`} alt={order.carId.title} className="w-full h-full object-cover" />
+                                                            <img src={getImageUrl(order.carId.images[0])} alt={order.carId.title} className="w-full h-full object-cover" />
                                                         ) : (
                                                             <div className="flex items-center justify-center h-full text-gray-400">
                                                                 <Package size={32} />
@@ -295,7 +296,7 @@ const ProfilePage = () => {
                                 <div className="flex gap-4">
                                     <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                                         {selectedOrder.carId?.images?.[0] && (
-                                            <img src={`http://localhost:3000${selectedOrder.carId.images[0]}`} alt="Car" className="w-full h-full object-cover" />
+                                            <img src={getImageUrl(selectedOrder.carId.images[0])} alt="Car" className="w-full h-full object-cover" />
                                         )}
                                     </div>
                                     <div className="space-y-1">

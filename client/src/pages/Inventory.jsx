@@ -8,6 +8,7 @@ import Header from "../components/common/Navbar";
 import Footer from "../components/Details/Footer";
 import api from "../config/server";
 import CarCard from "../components/Home/CarCard";
+import { getImageUrl } from "../config/imageUrl";
 
 // --- Main Page Component ---
 const InventoryPage = () => {
@@ -123,7 +124,7 @@ const InventoryPage = () => {
                   details: `${car.transmission} • ${car.fuelType}`,
                   dealer: `${car.dealerId.Name}`,
                   price: `₹${car.price}`,
-                  imgUrl: `http://localhost:3000${car.images[0]}`,
+                  imgUrl: getImageUrl(car.images[0]),
                   tagColor: "bg-blue-600",
                 }}
               />

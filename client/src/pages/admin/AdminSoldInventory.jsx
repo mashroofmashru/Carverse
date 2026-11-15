@@ -9,6 +9,7 @@ import SideBar from "../../components/common/SideBar";
 import DetailBox from "../../components/Dashboard/DetailBox";
 import api from "../../config/server";
 import { ADMIN_LINKS } from "../../constants/Links";
+import { getImageUrl } from "../../config/imageUrl";
 
 const AdminSoldInventory = () => {
   const [inventory, setInventory] = useState([]);
@@ -124,7 +125,7 @@ const AdminSoldInventory = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <img
-                            src={`http://localhost:3000${order.carId.images?.[0]}`}
+                            src={getImageUrl(order.carId.images?.[0])}
                             className="w-20 h-14 object-cover rounded-lg"
                             alt={order.carId.title}
                           />
@@ -243,7 +244,7 @@ const AdminSoldInventory = () => {
                 </h3>
                 <div className="flex flex-col sm:flex-row gap-6">
                   <img
-                    src={`http://localhost:3000${selectedOrder.carId?.images?.[0]}`}
+                    src={getImageUrl(selectedOrder.carId?.images?.[0])}
                     className="w-full sm:w-48 h-32 object-cover rounded-xl shadow-sm border border-gray-100"
                     alt="Car"
                   />
