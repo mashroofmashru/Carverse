@@ -32,9 +32,9 @@ const server = http.createServer(app);
 
 (async () => {
   try {
-    await connectDB(); // ✅ wait for MongoDB
+    await connectDB();
     server.listen(port, () => {
-      console.log(`🚀 Server running on http://localhost:${port}`);
+      console.log(`---Server running---`);
     });
 
     server.on("error", onError);
