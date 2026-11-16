@@ -27,23 +27,20 @@ app.set("port", port);
 const server = http.createServer(app);
 
 /**
- * Connect DB, then start server.
+ * Start listening first, then connect to MongoDB.
+ * The server always answers requests (with CORS headers), and a database
+ * problem shows up as a clear log line instead of a silent 502.
  */
 
-(async () => {
-  try {
-    await connectDB();
-    server.listen(port, () => {
-      console.log(`---Server running---`);
-    });
+server.on("error", onError);
+server.on("listening", onListening);
+server.listen(port, () => {
+  console.log(`---Server running---`);
+});
 
-    server.on("error", onError);
-    server.on("listening", onListening);
-  } catch (err) {
-    console.error("Failed to start server:", err.message);
-    process.exit(1);
-  }
-})();
+connectDB().catch((err) => {
+  console.error("MongoDB connection failed:", err.message);
+});
 
 /**
  * Normalize a port into a number, string, or false.
