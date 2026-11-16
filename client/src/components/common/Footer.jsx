@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import Logo from "./Logo";
 
 const footerLinks = [
   {
@@ -12,36 +13,33 @@ const footerLinks = [
   {
     title: "Company",
     links: [
-      { name: "About Us", to: "/about-us" },
-      { name: "Dealer Login", to: "/login" },
-      { name: "Contact Support", to: "/about-us#contact-us" },
+      { name: "About us", to: "/about-us" },
+      { name: "Dealer login", to: "/login" },
+      { name: "Contact support", to: "/about-us#contact-us" },
     ],
   },
 ];
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white pt-16 pb-8">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-12 mb-12">
-          <div>
-            <Link to="/" className="flex items-center gap-2 mb-4" aria-label="AutoNext home">
-              <i className="fa-solid fa-car-side text-2xl text-primary" aria-hidden="true"></i>
-              <span className="text-xl font-bold">AutoNext</span>
-            </Link>
-            <p className="text-gray-400 text-sm">
-              The most trusted platform to buy cars directly from authorized dealers. Transparent pricing,
-              verified inventory.
+    <footer className="bg-slate-950 text-slate-300">
+      <div className="container mx-auto px-4 sm:px-6 pt-14 pb-10">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-12">
+          <div className="col-span-2 md:col-span-6">
+            <Logo dark />
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
+              The trusted marketplace to buy cars directly from authorized dealers. Transparent pricing and verified
+              inventory.
             </p>
           </div>
 
           {footerLinks.map((col) => (
-            <div key={col.title}>
-              <h4 className="font-bold text-gray-300 mb-4">{col.title}</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+            <div key={col.title} className="md:col-span-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-white">{col.title}</h3>
+              <ul className="mt-4 space-y-3 text-sm">
                 {col.links.map((link) => (
                   <li key={link.name}>
-                    <Link to={link.to} className="hover:text-white transition">
+                    <Link to={link.to} className="text-slate-400 hover:text-white transition">
                       {link.name}
                     </Link>
                   </li>
@@ -51,8 +49,8 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
-          &copy; {new Date().getFullYear()} AutoNext. All rights reserved.
+        <div className="mt-12 border-t border-white/10 pt-8 text-sm text-slate-500">
+          <p>&copy; {new Date().getFullYear()} AutoNext. All rights reserved.</p>
         </div>
       </div>
     </footer>

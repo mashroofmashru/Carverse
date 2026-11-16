@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { LogOut, User, Menu, X, Search } from "lucide-react";
+import { Link, NavLink } from "react-router-dom";
+import { LogOut, User, Menu, X, LayoutDashboard, ChevronDown } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import Logo from "./Logo";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -10,18 +11,21 @@ const navLinks = [
 ];
 
 const Navbar = () => {
-  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [openMenu, setOpenMenu] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef(null);
 
-  const closeMenus = () => {
-    setOpenMenu(false);
-    setMobileOpen(false);
-  };
+  // Stronger shadow once the page is scrolled
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  // Close the avatar dropdown on outside click or Escape
+  // Close the account dropdown on outside click or Escape
   useEffect(() => {
     if (!openMenu) return;
     const onClick = (e) => {
@@ -36,56 +40,65 @@ const Navbar = () => {
     };
   }, [openMenu]);
 
-  const handleLogout = () => {
+  const closeMenus = () => {
     setOpenMenu(false);
     setMobileOpen(false);
+  };
+
+  const handleLogout = () => {
+    closeMenus();
     logout();
   };
 
   const dashboardPath = user?.role === "admin" ? "/admin" : user?.role === "dealer" ? "/dealer" : null;
-
-  const linkClass = ({ isActive }) =>
-    `transition hover:text-blue-600 ${isActive ? "text-blue-600 font-semibold" : ""}`;
+  const initial = user?.Name?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
-      <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-        {/* Logo */}
-        <Link to="/" onClick={closeMenus} className="flex items-center gap-2" aria-label="AutoNext home">
-          <i className="fa-solid fa-car-side text-2xl text-blue-600" aria-hidden="true"></i>
-          <span className="text-xl font-bold tracking-tight text-gray-900">AutoNext</span>
-        </Link>
+    <header
+      className={`sticky top-0 z-50 border-b transition-all duration-300 ${
+        scrolled
+          ? "bg-white/90 backdrop-blur-md border-gray-200/80 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)]"
+          : "bg-white border-transparent"
+      }`}
+    >
+      <nav className="container mx-auto flex h-16 md:h-[72px] items-center justify-between px-4 sm:px-6" aria-label="Main">
+        <Logo onClick={closeMenus} />
 
         {/* Desktop links */}
-        <div className="hidden md:flex space-x-8 font-medium text-gray-600">
+        <div className="hidden md:flex items-center gap-1 rounded-full bg-gray-100/80 p-1">
           {navLinks.map((link) => (
-            <NavLink key={link.name} to={link.href} end={link.href === "/"} className={linkClass}>
+            <NavLink
+              key={link.name}
+              to={link.href}
+              end={link.href === "/"}
+              className={({ isActive }) =>
+                `rounded-full px-5 py-2 text-sm font-semibold transition-all ${
+                  isActive ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                }`
+              }
+            >
               {link.name}
             </NavLink>
           ))}
         </div>
 
-        {/* Right section */}
-        <div className="flex items-center gap-2 sm:gap-4">
-          <button
-            type="button"
-            onClick={() => {
-              closeMenus();
-              navigate("/viewInventory");
-            }}
-            className="p-2 hover:bg-gray-100 rounded-full"
-            aria-label="Search cars"
-          >
-            <Search className="w-5 h-5 text-gray-700" />
-          </button>
-
+        {/* Right side */}
+        <div className="flex items-center gap-2">
           {!user && (
-            <Link
-              to="/login"
-              className="hidden md:block px-5 py-2 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition"
-            >
-              Login
-            </Link>
+            <div className="hidden md:flex items-center gap-2">
+              <Link
+                to="/login"
+                className="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-blue-600 transition"
+              >
+                Log in
+              </Link>
+              <Link
+                to="/signup"
+                className="rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-600/25 hover:bg-blue-700 transition"
+              >
+                Get started
+              </Link>
+            </div>
           )}
 
           {user && (
@@ -93,122 +106,151 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={() => setOpenMenu((o) => !o)}
-                className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold uppercase"
+                className="flex items-center gap-2 rounded-full border border-gray-200 py-1 pl-1 pr-3 hover:border-blue-300 transition"
                 aria-label="Account menu"
                 aria-haspopup="menu"
                 aria-expanded={openMenu}
               >
-                {user?.Name?.charAt(0) || "U"}
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-sm font-bold text-white">
+                  {initial}
+                </span>
+                <span className="max-w-[120px] truncate text-sm font-semibold text-gray-700">{user.Name}</span>
+                <ChevronDown
+                  className={`h-4 w-4 text-gray-400 transition-transform ${openMenu ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                />
               </button>
 
               {openMenu && (
                 <div
                   role="menu"
                   onClick={closeMenus}
-                  className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden"
+                  className="absolute right-0 mt-3 w-60 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl animate-in fade-in zoom-in-95 duration-150"
                 >
-                  {dashboardPath && (
+                  <div className="border-b border-gray-100 px-4 py-3">
+                    <p className="truncate text-sm font-semibold text-gray-900">{user.Name}</p>
+                    <p className="truncate text-xs text-gray-500">{user.Email}</p>
+                  </div>
+                  <div className="p-1.5">
+                    {dashboardPath && (
+                      <Link
+                        role="menuitem"
+                        to={dashboardPath}
+                        className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <LayoutDashboard size={16} className="text-gray-400" /> Dashboard
+                      </Link>
+                    )}
                     <Link
                       role="menuitem"
-                      to={dashboardPath}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100"
+                      to="/profile"
+                      className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
-                      Dashboard
+                      <User size={16} className="text-gray-400" /> My profile
                     </Link>
-                  )}
-                  <Link
-                    role="menuitem"
-                    to="/profile"
-                    className="flex items-center gap-2 w-full px-4 py-2 text-sm hover:bg-gray-100"
-                  >
-                    <User size={16} />
-                    View Profile
-                  </Link>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    <LogOut size={16} />
-                    Logout
-                  </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut size={16} /> Log out
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* Mobile menu toggle */}
+          {/* Mobile toggle */}
           <button
             type="button"
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+            className="md:hidden rounded-xl p-2 text-gray-700 hover:bg-gray-100"
             onClick={() => setMobileOpen((o) => !o)}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
             aria-controls="mobile-menu"
           >
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile menu panel */}
+      {/* Mobile menu */}
       {mobileOpen && (
-        <div id="mobile-menu" onClick={closeMenus} className="md:hidden border-t border-gray-100 bg-white px-4 pb-4">
-          <div className="flex flex-col py-2 font-medium text-gray-700">
+        <div
+          id="mobile-menu"
+          onClick={closeMenus}
+          className="md:hidden border-t border-gray-100 bg-white px-4 pb-6 pt-2 shadow-lg animate-in slide-in-from-top-2 fade-in duration-200"
+        >
+          {user && (
+            <div className="flex items-center gap-3 rounded-2xl bg-gray-50 p-3 mb-2">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 font-bold text-white">
+                {initial}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-gray-900">{user.Name}</p>
+                <p className="truncate text-xs text-gray-500">{user.Email}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-col py-1">
             {navLinks.map((link) => (
               <NavLink
                 key={link.name}
                 to={link.href}
                 end={link.href === "/"}
                 className={({ isActive }) =>
-                  `px-3 py-3 rounded-lg hover:bg-gray-50 ${isActive ? "text-blue-600 font-semibold" : ""}`
+                  `rounded-xl px-4 py-3 font-semibold ${
+                    isActive ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-50"
+                  }`
                 }
               >
                 {link.name}
               </NavLink>
             ))}
+            {user && dashboardPath && (
+              <Link to={dashboardPath} className="flex items-center gap-2 rounded-xl px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50">
+                <LayoutDashboard size={18} /> Dashboard
+              </Link>
+            )}
+            {user && (
+              <Link to="/profile" className="flex items-center gap-2 rounded-xl px-4 py-3 font-semibold text-gray-700 hover:bg-gray-50">
+                <User size={18} /> My profile
+              </Link>
+            )}
           </div>
 
-          <div className="border-t border-gray-100 pt-3 flex flex-col gap-2">
+          <div className="mt-3 border-t border-gray-100 pt-4">
             {user ? (
-              <>
-                {dashboardPath && (
-                  <Link to={dashboardPath} className="px-3 py-3 rounded-lg hover:bg-gray-50 font-medium">
-                    Dashboard
-                  </Link>
-                )}
-                <Link to="/profile" className="px-3 py-3 rounded-lg hover:bg-gray-50 font-medium flex items-center gap-2">
-                  <User size={16} /> View Profile
-                </Link>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="px-3 py-3 rounded-lg hover:bg-red-50 text-red-600 font-medium flex items-center gap-2 text-left"
-                >
-                  <LogOut size={16} /> Logout
-                </button>
-              </>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-100 px-4 py-3 font-semibold text-red-600 hover:bg-red-50"
+              >
+                <LogOut size={18} /> Log out
+              </button>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <Link
                   to="/login"
-                  className="px-4 py-3 bg-blue-600 text-white rounded-xl font-semibold text-center hover:bg-blue-700"
+                  className="rounded-xl border border-gray-200 px-4 py-3 text-center font-semibold text-gray-800 hover:bg-gray-50"
                 >
-                  Login
+                  Log in
                 </Link>
                 <Link
                   to="/signup"
-                  className="px-4 py-3 border border-gray-200 rounded-xl font-semibold text-center hover:bg-gray-50"
+                  className="rounded-xl bg-blue-600 px-4 py-3 text-center font-semibold text-white hover:bg-blue-700"
                 >
-                  Sign up
+                  Get started
                 </Link>
               </div>
             )}
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 };
 
