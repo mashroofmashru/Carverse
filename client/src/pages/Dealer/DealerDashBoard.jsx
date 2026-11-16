@@ -224,7 +224,7 @@ const DealerDashboard = () => {
         <div id="dashboard-layout" className="flex min-h-[calc(100vh-4rem)]">
           <SideBar links={DEALER_LINKS} />
 
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 overflow-y-auto">
             {/* ... Header and Description ... */}
             <h1 className="text-3xl font-extrabold text-gray-900 mb-6">
               Dealer Dashboard

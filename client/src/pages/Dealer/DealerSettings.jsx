@@ -61,7 +61,7 @@ const DealerSettings = () => {
             <Header title="Dealer Settings" />
             <div className="flex flex-1">
                 <SideBar links={DEALER_LINKS} />
-                <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
                     <div className="max-w-3xl mx-auto">
 
                         <div className="flex justify-between items-center mb-8">
@@ -95,7 +95,7 @@ const DealerSettings = () => {
                                 <div className="flex flex-col gap-2">
                                     <label className="text-xs font-black text-gray-400 uppercase tracking-wider">Full Name</label>
                                     <div className="relative">
-                                        <User className="absolute left-4 top-8 -translate-y-1/2 text-gray-400" size={16} />
+                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={16} />
                                         <input
                                             type="text"
                                             value={name}
@@ -110,7 +110,7 @@ const DealerSettings = () => {
                                 <div className="flex flex-col gap-2">
                                     <label className="text-xs font-black text-gray-400 uppercase tracking-wider">Email Address</label>
                                     <div className="relative">
-                                        <Mail className="absolute left-4 top-8 -translate-y-1/2 text-gray-400" size={16} />
+                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={16} />
                                         <input
                                             type="email"
                                             value={email}
@@ -125,9 +125,9 @@ const DealerSettings = () => {
                                 <div className="flex flex-col gap-2">
                                     <label className="text-xs font-black text-gray-400 uppercase tracking-wider">Phone Number</label>
                                     <div className="relative">
-                                        <Phone className="absolute left-4 top-8 -translate-y-1/2 text-gray-400" size={16} />
+                                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={16} />
                                         <input
-                                            type="number"
+                                            type="tel"
                                             value={phone}
                                             onChange={(e) => setPhone(e.target.value)}
                                             placeholder="Enter phone number"

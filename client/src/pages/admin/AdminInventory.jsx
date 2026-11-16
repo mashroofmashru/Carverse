@@ -82,14 +82,14 @@ const AdminInventory = () => {
       <div className="flex flex-1">
         <SideBar links={ADMIN_LINKS} />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-2xl font-extrabold mb-8">Master Inventory</h1>
 
             {/* Filters Bar */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/4 text-gray-400" size={18} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
                 <input
                   type="text"
                   placeholder="Search brand or model..."

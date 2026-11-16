@@ -1,43 +1,57 @@
 import React from "react";
-import { Menu, Car } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useSidebar } from "../../context/SidebarContext";
+import Logo from "./Logo";
+
+const roleLabel = { admin: "Admin", dealer: "Dealer", user: "Customer" };
 
 function Header({ title, showMenu = true }) {
   const { user } = useAuth();
   const { toggle } = useSidebar();
+  const initial = user?.Name?.charAt(0)?.toUpperCase() || "U";
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-40">
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center min-w-0">
-            {showMenu && (
-              <button
-                type="button"
-                className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 mr-3 transition"
-                onClick={toggle}
-                aria-label="Open navigation menu"
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-            )}
-            <div className="flex items-center gap-2 min-w-0">
-              <Car className="text-primary w-6 h-6 shrink-0" />
-              <span className="text-xl font-bold tracking-tight text-gray-900 truncate">{title}</span>
-            </div>
+    <header className="sticky top-0 z-40 h-16 border-b border-gray-200 bg-white/90 backdrop-blur-md">
+      <div className="flex h-full items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          {showMenu && (
+            <button
+              type="button"
+              className="rounded-xl p-2 text-gray-600 hover:bg-gray-100 lg:hidden"
+              onClick={toggle}
+              aria-label="Open navigation menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          )}
+
+          <div className={showMenu ? "hidden sm:block" : ""}>
+            <Logo />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700 hidden sm:inline">{user?.Name}</span>
-            <div
-              className="w-10 h-10 bg-primary/20 flex items-center justify-center rounded-full border border-primary/50 text-primary font-semibold"
+          {title && (
+            <>
+              <span className="hidden h-6 w-px bg-gray-200 sm:block" aria-hidden="true" />
+              <span className="truncate text-base font-semibold text-gray-700">{title}</span>
+            </>
+          )}
+        </div>
+
+        {user && (
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right sm:block">
+              <p className="max-w-[160px] truncate text-sm font-semibold text-gray-900">{user.Name}</p>
+              <p className="text-xs text-gray-500">{roleLabel[user.role] || "Member"}</p>
+            </div>
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-sm font-bold text-white"
               aria-hidden="true"
             >
-              {user?.Name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
+              {initial}
+            </span>
           </div>
-        </div>
+        )}
       </div>
     </header>
   );

@@ -142,7 +142,7 @@ const ProfilePage = () => {
                                     <div className="md:col-span-2">
                                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Full Name</label>
                                         <div className="relative">
-                                            <User className="absolute left-4 top-1/4 text-gray-400" size={18} />
+                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
                                             <input
                                                 type="text"
                                                 value={name}
@@ -156,7 +156,7 @@ const ProfilePage = () => {
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Email Address</label>
                                         <div className="relative">
-                                            <Mail className="absolute left-4 top-1/3 text-gray-400" size={18} />
+                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
                                             <input
                                                 type="email"
                                                 value={email}
@@ -170,7 +170,7 @@ const ProfilePage = () => {
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Phone Number</label>
                                         <div className="relative">
-                                            <Phone className="absolute left-4 top-1/3 text-gray-400" size={18} />
+                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
                                             <input
                                                 type="tel"
                                                 value={phone}

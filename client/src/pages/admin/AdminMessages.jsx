@@ -117,7 +117,7 @@ const AdminMessages = () => {
             <div className="flex flex-1 relative min-h-[calc(100vh-4rem)]">
                 <SideBar links={ADMIN_LINKS} />
 
-                <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
                     <div className="max-w-6xl mx-auto">
                         {/* Header */}
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
@@ -143,12 +143,12 @@ const AdminMessages = () => {
                                         <option value="read">Read</option>
                                         <option value="responded">Responded</option>
                                     </select>
-                                    <Filter className="absolute left-3 top-1/4 text-gray-400" size={16} />
+                                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={16} />
                                 </div>
 
                                 {/* Search */}
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/4 text-gray-400" size={18} />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
                                     <input
                                         type="text"
                                         placeholder="Search messages..."

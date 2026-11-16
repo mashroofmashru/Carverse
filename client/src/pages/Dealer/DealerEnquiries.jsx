@@ -53,7 +53,7 @@ const DealerEnquiries = () => {
       <div className="flex flex-1">
         <SideBar links={DEALER_LINKS}/>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             
             {/* Page Header */}
@@ -67,7 +67,7 @@ const DealerEnquiries = () => {
             {/* Search Bar */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6">
               <div className="relative">
-                <Search className="absolute left-3 top-7 -translate-y-1/2 text-gray-400" size={18} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
                 <input 
                   type="text" 
                   placeholder="Search by customer name or vehicle..." 
