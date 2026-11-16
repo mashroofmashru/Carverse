@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import useModal from "../../hooks/useModal";
 import {
   Car, Search, Eye, Trash2,
   Fuel, Settings2, Gauge, Palette, X,
@@ -21,6 +22,8 @@ const DealerInventory = () => {
 
   // --- Alert & Notification States ---
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, title: "" });
+  useModal(!!selectedCar, () => setSelectedCar(null));
+  useModal(deleteConfirm.show, () => setDeleteConfirm((prev) => ({ ...prev, show: false })));
   const [notification, setNotification] = useState({ show: false, message: "", type: "success" });
 
   useEffect(() => {
@@ -228,7 +231,7 @@ const DealerInventory = () => {
           <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
               <h2 className="text-xl font-bold">{selectedCar.brand} {selectedCar.model}</h2>
-              <button onClick={() => setSelectedCar(null)} className="p-2 hover:bg-gray-100 rounded-full"><X /></button>
+              <button aria-label="Close" onClick={() => setSelectedCar(null)} className="p-2 hover:bg-gray-100 rounded-full"><X /></button>
             </div>
             <div className="p-6">
               <img src={getImageUrl(selectedCar.images?.[0])} className="w-full h-64 object-cover rounded-2xl mb-6 shadow-md" alt="Car" />

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
-import Footer from "../components/Details/Footer";
+import Footer from "../components/common/Footer";
 import api from "../config/server";
 import Toast from "../components/common/Toast";
 import { Send, Mail, User, MessageCircle } from "lucide-react";
@@ -14,6 +15,14 @@ const AboutUsPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+  const location = useLocation();
+
+  // Scroll to #contact-us when arriving from the footer link
+  useEffect(() => {
+    if (!location.hash) return;
+    const el = document.getElementById(location.hash.slice(1));
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [location.hash]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -27,7 +36,7 @@ const AboutUsPage = () => {
       setToast({ show: true, message: "Message sent successfully!", type: "success" });
       setFormData({ name: "", email: "", subject: "", message: "" });
     } catch (error) {
-      setToast({ show: true, message: "Failed to send message. Please try again.", type: "error" });
+      setToast({ show: true, message: error.response?.data?.message || "Failed to send message. Please try again.", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -35,12 +44,6 @@ const AboutUsPage = () => {
 
   return (
     <>
-      <style>{`
-        .font-inter { font-family: 'Inter', sans-serif; }
-        .text-primary { color: #2563eb; }
-        .bg-primary { background-color: #2563eb; }
-        .hover\\:bg-primary-dark:hover { background-color: #1d4ed8; }
-      `}</style>
 
       <div className="bg-gray-50 font-inter min-h-screen flex flex-col">
         <Navbar />
@@ -179,7 +182,7 @@ const AboutUsPage = () => {
                       { name: "Mirzab", role: "Head of Operations" }
                     ].map((member, i) => (
                       <div key={i} className="flex items-center space-x-4">
-                        <div className="h-12 w-12 rounded-full bg-gray-200 flex-shrink-0">
+                        <div className="h-12 w-12 rounded-full bg-gray-200 shrink-0">
                           <img src={`https://xsgames.co/randomusers/assets/avatars/male/${i + 1}.jpg`} alt={member.name} className="rounded-full" />
                         </div>
                         <div>
@@ -210,7 +213,7 @@ const AboutUsPage = () => {
                     ].map((item, idx) => (
                       <li key={idx} className="flex items-start">
                         <span className="mr-3 mt-1 text-blue-300">•</span>
-                        <span className="font-medium text-primary">{item}</span>
+                        <span className="font-medium text-white">{item}</span>
                       </li>
                     ))}
                   </ul>

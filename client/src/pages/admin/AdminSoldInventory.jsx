@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import useModal from "../../hooks/useModal";
 import {
   Car, Search, Eye, Trash2,
   Fuel, Settings2, Gauge, Palette, X,
@@ -20,6 +21,8 @@ const AdminSoldInventory = () => {
 
   // --- Alert & Notification States ---
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, title: "" });
+  useModal(!!selectedOrder, () => setSelectedOrder(null));
+  useModal(deleteConfirm.show, () => setDeleteConfirm((prev) => ({ ...prev, show: false })));
   const [notification, setNotification] = useState({ show: false, message: "", type: "success" });
 
   useEffect(() => {
@@ -58,10 +61,10 @@ const AdminSoldInventory = () => {
 
   // Filter Logic
   const filteredOrders = (Array.isArray(inventory) ? inventory : []).filter((order) => {
-    if (!order.carId) return false;
     const matchesSearch =
-      order.carId.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.carId.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      searchTerm.trim() === "" ||
+      order.carId?.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.carId?.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.userId?.Name?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
@@ -125,13 +128,13 @@ const AdminSoldInventory = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <img
-                            src={getImageUrl(order.carId.images?.[0])}
+                            src={getImageUrl(order.carId?.images?.[0])}
                             className="w-20 h-14 object-cover rounded-lg"
-                            alt={order.carId.title}
+                            alt={order.carId?.title || "Deleted car"}
                           />
                           <div>
-                            <div className="font-bold text-gray-900">{order.carId.brand} {order.carId.model}</div>
-                            <div className="text-[11px] text-gray-500">{order.carId.year} • {order.carId.fuelType}</div>
+                            <div className="font-bold text-gray-900">{order.carId ? `${order.carId.brand} ${order.carId.model}` : "Deleted car"}</div>
+                            <div className="text-[11px] text-gray-500">{order.carId?.year} • {order.carId?.fuelType}</div>
                             <div className="mt-1 inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700">SOLD</div>
                           </div>
                         </div>
@@ -153,7 +156,7 @@ const AdminSoldInventory = () => {
                         <div className="text-gray-400 text-[10px]">{order.dealerId?.Email}</div>
                       </td>
                       <td className="px-6 py-4 font-bold text-sm">
-                        ₹{order.amount.toLocaleString('en-IN')}
+                        ₹{order.amount?.toLocaleString('en-IN')}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         <div className="flex items-center gap-2">
@@ -166,7 +169,7 @@ const AdminSoldInventory = () => {
                           <button onClick={() => setSelectedOrder(order)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><Eye size={18} /></button>
                           {/* UPDATED DELETE BUTTON */}
                           <button
-                            onClick={() => setDeleteConfirm({ show: true, id: order._id, title: `${order.carId.brand} ${order.carId.model} (History)` })}
+                            onClick={() => setDeleteConfirm({ show: true, id: order._id, title: `${order.carId ? `${order.carId.brand} ${order.carId.model}` : "Deleted car"} (History)` })}
                             className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
                           >
                             <Trash2 size={18} />
@@ -233,7 +236,7 @@ const AdminSoldInventory = () => {
                 <h2 className="text-xl font-bold text-gray-900">Order Details</h2>
                 <p className="text-xs text-gray-500 font-mono mt-1">ID: {selectedOrder._id}</p>
               </div>
-              <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition"><X size={20} /></button>
+              <button aria-label="Close" onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition"><X size={20} /></button>
             </div>
 
             <div className="p-6 space-y-8">
@@ -250,7 +253,7 @@ const AdminSoldInventory = () => {
                   />
                   <div className="flex-1 space-y-3">
                     <div>
-                      <div className="text-lg font-black text-gray-900">{selectedOrder.carId?.brand} {selectedOrder.carId?.model}</div>
+                      <div className="text-lg font-black text-gray-900">{selectedOrder.carId ? `${selectedOrder.carId.brand} ${selectedOrder.carId.model}` : "Deleted car"}</div>
                       <div className="text-sm text-gray-500">{selectedOrder.carId?.year} • {selectedOrder.carId?.fuelType}</div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-xs">

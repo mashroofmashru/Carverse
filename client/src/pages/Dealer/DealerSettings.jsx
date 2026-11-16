@@ -8,7 +8,7 @@ import api from "../../config/server";
 import { DEALER_LINKS } from "../../constants/Links";
 
 const DealerSettings = () => {
-    const { user, setUser, login } = useAuth();
+    const { user, login } = useAuth();
     const [isSaving, setIsSaving] = useState(false);
 
     const [name, setName] = useState("");
@@ -34,7 +34,7 @@ const DealerSettings = () => {
 
     const handleUpdate = async (e) => {
         e.preventDefault();
-        if (!user?._id) return alert("User ID not found.");
+        if (!user?._id) return showToast("User ID not found.", "error");
 
         setIsSaving(true);
         try {

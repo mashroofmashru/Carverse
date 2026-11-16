@@ -15,6 +15,7 @@ import {
 import Header from "../../components/common/Header";
 import SideBar from "../../components/common/SideBar";
 import AddCarForm from "../../components/Details/AddCarForm";
+import { useToast } from "../../context/ToastContext";
 import api from "../../config/server";
 import { DEALER_LINKS } from "../../constants/Links";
 
@@ -30,6 +31,8 @@ const DealerDashboard = () => {
   });
   const [salesData, setSalesData] = useState([]);
   const [loadingReport, setLoadingReport] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,7 +54,7 @@ const DealerDashboard = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [refreshKey]);
 
   const processSalesData = (orders) => {
     const lastSixMonths = [];
@@ -92,7 +95,7 @@ const DealerDashboard = () => {
       }
     } catch (error) {
       console.error("Failed to generate report", error);
-      alert("Failed to generate report. Please try again.");
+      showToast("Failed to generate report. Please try again.", "error");
     } finally {
       setLoadingReport(false);
     }
@@ -215,13 +218,6 @@ const DealerDashboard = () => {
   return (
     <>
       {/* ... styles ... */}
-      <style>{`
-        .font-inter { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-        .text-primary { color: #2563eb; }
-        .bg-primary { background-color: #2563eb; }
-        .hover\\:bg-primary-dark:hover { background-color: #1d4ed8; }
-        .shadow-primary { box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.1), 0 4px 6px -2px rgba(37, 99, 235, 0.05); }
-      `}</style>
 
       <div className="bg-gray-50 font-inter min-h-screen flex flex-col">
         <Header title={"Dealer Control Center"} />
@@ -393,7 +389,12 @@ const DealerDashboard = () => {
           </main>
         </div>
       </div>
-      {ShowAddVehicleform && (<AddCarForm onClose={() => setShowAddVehicleform(false)} />)}
+      {ShowAddVehicleform && (
+        <AddCarForm
+          onClose={() => setShowAddVehicleform(false)}
+          onAdded={() => setRefreshKey((k) => k + 1)}
+        />
+      )}
     </>
   );
 };

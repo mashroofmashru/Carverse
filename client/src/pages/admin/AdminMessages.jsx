@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import useModal from "../../hooks/useModal";
 import { MessageSquareText, Mail, Calendar, User, Search, Eye, Filter, X, Send } from "lucide-react";
 import Header from "../../components/common/Header";
 import SideBar from "../../components/common/SideBar";
@@ -12,10 +13,13 @@ const AdminMessages = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
     const [selectedMessage, setSelectedMessage] = useState(null);
+    useModal(!!selectedMessage, () => setSelectedMessage(null));
     const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
     useEffect(() => {
         fetchMessages();
+        // Load once when the page opens
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchMessages = async () => {
@@ -61,7 +65,7 @@ const AdminMessages = () => {
                 showToast(`Marked as ${newStatus}`);
             }
         } catch (err) {
-            showToast("Failed to update status", "error");
+            showToast(err.response?.data?.message || "Failed to update status", "error");
         }
     };
 
@@ -226,14 +230,14 @@ const AdminMessages = () => {
                         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                                 <h3 className="text-xl font-bold text-gray-900">Message Details</h3>
-                                <button onClick={() => setSelectedMessage(null)} className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-full transition">
+                                <button aria-label="Close" onClick={() => setSelectedMessage(null)} className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-full transition">
                                     <X size={20} />
                                 </button>
                             </div>
 
                             <div className="p-6 space-y-6">
                                 <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl flex-shrink-0">
+                                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl shrink-0">
                                         {selectedMessage.name.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="flex-1">

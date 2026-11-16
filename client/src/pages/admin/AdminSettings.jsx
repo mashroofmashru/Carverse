@@ -8,7 +8,7 @@ import api from "../../config/server";
 import { ADMIN_LINKS } from "../../constants/Links";
 
 const AdminSettings = () => {
-  const { user, setUser, login } = useAuth();
+  const { user, login } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
 
   const [name, setName] = useState("");
@@ -24,7 +24,6 @@ const AdminSettings = () => {
   };
 
   useEffect(() => {
-    console.log(user)
     if (user) {
       setName(user.Name || "");
       setEmail(user.Email || "");
@@ -35,7 +34,7 @@ const AdminSettings = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    if (!user?._id) return alert("User ID not found.");
+    if (!user?._id) return showToast("User ID not found.", "error");
 
     setIsSaving(true);
     try {
@@ -50,7 +49,7 @@ const AdminSettings = () => {
         login(res.data.user);
       }
     } catch (err) {
-      showToast(err.response.data.message||"Error updating server data","error");
+      showToast(err.response?.data?.message || "Error updating server data","error");
     } finally {
       setIsSaving(false);
     }

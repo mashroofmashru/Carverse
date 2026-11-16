@@ -4,8 +4,10 @@ import { ShieldCheck, LogOut, Clock, RotateCcw, Building2, MapPin, FileBadge, Se
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/common/Header';
 import api from '../../config/server';
+import { useToast } from "../../context/ToastContext";
 
 const DealerApproval = () => {
+  const { showToast } = useToast();
     const { user, login, logout } = useAuth();
     const navigate = useNavigate();
     const [checking, setChecking] = useState(false);
@@ -42,7 +44,7 @@ const DealerApproval = () => {
                 if (res.data.user.status === 'approved') {
                     navigate('/dealer');
                 } else if (res.data.user.isApplied) {
-                    alert('Your account is still under review. Please check back later.');
+                    showToast('Your account is still under review. Please check back later.');
                 }
             }
         } catch (error) {
@@ -63,11 +65,11 @@ const DealerApproval = () => {
             });
             if (res.data.success) {
                 login(res.data.user, localStorage.getItem('auth_token'));
-                alert('Details submitted successfully! Your account is now under review.');
+                showToast('Details submitted! Your account is now under review.');
             }
         } catch (error) {
             console.error("Failed to submit details", error);
-            alert('Failed to submit details. Please try again.');
+            showToast('Failed to submit details. Please try again.', 'error');
         } finally {
             setSubmitting(false);
         }
@@ -75,7 +77,7 @@ const DealerApproval = () => {
 
     return (
         <div className="bg-gray-50 min-h-screen font-inter flex flex-col">
-            <Header title="Dealer Verification" />
+            <Header title="Dealer Verification" showMenu={false} />
 
             <div className="flex-1 flex items-center justify-center p-4 py-12">
                 <div className="bg-white max-w-xl w-full rounded-3xl shadow-2xl overflow-hidden border border-gray-100">

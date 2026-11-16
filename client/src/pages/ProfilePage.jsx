@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from "react";
+import useModal from "../hooks/useModal";
+import { useLocation } from "react-router-dom";
 import { User, Mail, Save, RefreshCcw, Phone, Package, Calendar, MapPin, X, Receipt } from "lucide-react";
 import Navbar from "../components/common/Navbar";
-import Footer from "../components/Details/Footer";
+import Footer from "../components/common/Footer";
 import Toast from "../components/common/Toast";
 import { useAuth } from "../context/AuthContext";
 import api from "../config/server";
 import { getImageUrl } from "../config/imageUrl";
+import { formatDate, formatINR } from "../utils/format";
 
 const ProfilePage = () => {
     const { user, login, token } = useAuth();
     const [isSaving, setIsSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState("profile");
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState(location.state?.tab === "orders" ? "orders" : "profile");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
-    const [role, setRole] = useState("User");
 
     const [orders, setOrders] = useState([]);
     const [loadingOrders, setLoadingOrders] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
+    useModal(!!selectedOrder, () => setSelectedOrder(null));
 
     const [notification, setNotification] = useState({ show: false, message: "", type: "success" });
 
@@ -32,7 +36,6 @@ const ProfilePage = () => {
             setName(user.Name || "");
             setEmail(user.Email || "");
             setPhone(user.Phone || "");
-            setRole(user.Role || "User");
             if (activeTab === "orders") {
                 fetchOrders();
             }
@@ -44,7 +47,6 @@ const ProfilePage = () => {
         try {
             const res = await api.get("/orders");
             if (res.data.success) {
-                console.log(res.data.orders)
                 setOrders(res.data.orders);
             }
         } catch (err) {
@@ -76,13 +78,6 @@ const ProfilePage = () => {
         }
     };
 
-    const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
-    };
 
     return (
         <div className="bg-gray-50 min-h-screen flex flex-col font-inter">
@@ -92,14 +87,14 @@ const ProfilePage = () => {
                 <div className="flex flex-col lg:flex-row gap-8">
 
                     {/* Sidebar Navigation */}
-                    <div className="lg:w-64 flex-shrink-0">
+                    <div className="lg:w-64 shrink-0">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
                             <div className="p-6 bg-gradient-to-br from-blue-600 to-blue-800 text-white text-center">
-                                <div className="w-20 h-20 bg-primary backdrop-blur-sm rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3 border-2 border-white/30">
+                                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3 border-2 border-white/30">
                                     {name ? name.charAt(0).toUpperCase() : "U"}
                                 </div>
-                                <h2 className="font-bold text-lg truncate text-gray-900">{name || "User"}</h2>
-                                <p className="text-blue-400 text-xs">{email}</p>
+                                <h2 className="font-bold text-lg truncate text-white">{name || "User"}</h2>
+                                <p className="text-blue-100 text-xs truncate">{email}</p>
                             </div>
                             <div className="p-2 space-y-1">
                                 <button
@@ -214,7 +209,7 @@ const ProfilePage = () => {
                                             <div key={order._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
                                                 <div className="p-6 flex flex-col md:flex-row gap-6">
                                                     {/* Car Image Placeholder or Data */}
-                                                    <div className="w-full md:w-48 h-32 bg-gray-100 rounded-xl flex-shrink-0 relative overflow-hidden">
+                                                    <div className="w-full md:w-48 h-32 bg-gray-100 rounded-xl shrink-0 relative overflow-hidden">
                                                         {order.carId?.images?.[0] ? (
                                                             <img src={getImageUrl(order.carId.images[0])} alt={order.carId.title} className="w-full h-full object-cover" />
                                                         ) : (
@@ -242,7 +237,7 @@ const ProfilePage = () => {
                                                             </div>
                                                             <div className="flex items-center gap-1.5">
                                                                 <Receipt size={14} className="text-gray-400" />
-                                                                ₹{order.amount?.toLocaleString()}
+                                                                {formatINR(order.amount)}
                                                             </div>
                                                         </div>
 
@@ -272,7 +267,7 @@ const ProfilePage = () => {
                     <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                         <div className="sticky top-0 bg-white border-b border-gray-100 p-6 flex justify-between items-center z-10">
                             <h2 className="text-xl font-bold text-gray-900">Order Details</h2>
-                            <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-gray-100 rounded-full transition">
+                            <button aria-label="Close" onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-gray-100 rounded-full transition">
                                 <X size={20} className="text-gray-500" />
                             </button>
                         </div>
@@ -286,7 +281,7 @@ const ProfilePage = () => {
                                 </div>
                                 <div className="text-right">
                                     <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Amount</span>
-                                    <span className="text-xl font-black text-blue-600">₹{selectedOrder.amount?.toLocaleString()}</span>
+                                    <span className="text-xl font-black text-blue-600">{formatINR(selectedOrder.amount)}</span>
                                 </div>
                             </div>
 
@@ -294,7 +289,7 @@ const ProfilePage = () => {
                             <div>
                                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Vehicle Information</h3>
                                 <div className="flex gap-4">
-                                    <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                    <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                                         {selectedOrder.carId?.images?.[0] && (
                                             <img src={getImageUrl(selectedOrder.carId.images[0])} alt="Car" className="w-full h-full object-cover" />
                                         )}

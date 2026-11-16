@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import useModal from "../../hooks/useModal";
 import {
     Users2, Mail, Shield, X, User as UserIcon,
     Filter, Edit, Trash2, CheckCircle, AlertCircle,
@@ -18,13 +19,16 @@ const ManageUser = () => {
     const [filterRole, setFilterRole] = useState("all");
     const [activeTab, setActiveTab] = useState("all"); // "all" | "pending"
     const [selectedUser, setSelectedUser] = useState(null);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, name: "" });
+    useModal(!!selectedUser, () => setSelectedUser(null));
+    useModal(deleteConfirm.show, () => setDeleteConfirm((prev) => ({ ...prev, show: false })));
     const [notification, setNotification] = useState({ show: false, message: "", type: "success" });
 
     useEffect(() => {
         fetchUsers();
+        // Load once when the page opens
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchUsers = async () => {
@@ -74,7 +78,7 @@ const ManageUser = () => {
                 showToast(`User ${newStatus} successfully`);
             }
         } catch (err) {
-            showToast("Failed to update status", "error");
+            showToast(err.response?.data?.message || "Failed to update status", "error");
         }
     };
 
@@ -83,7 +87,7 @@ const ManageUser = () => {
             return user.role === "dealer" && user.status === "pending" && user.isApplied;
         }
         if (filterRole === "all") return true;
-        return user.role.toLowerCase() === filterRole.toLowerCase();
+        return user.role?.toLowerCase() === filterRole.toLowerCase();
     });
 
     const getStatusColor = (status) => {
@@ -182,7 +186,7 @@ const ManageUser = () => {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
-                                                            {user.Name.charAt(0).toUpperCase()}
+                                                            {user.Name?.charAt(0)?.toUpperCase() || "U"}
                                                         </div>
                                                         <div>
                                                             <div className="font-bold text-gray-900 leading-tight">{user.Name}</div>
@@ -203,13 +207,13 @@ const ManageUser = () => {
                                                         {user.status === 'pending' ? (
                                                             <>
                                                                 <button
-                                                                    onClick={() => handleUpdateStatus(user, 'approved')}
+                                                                    onClick={() => handleUpdateStatus(user, 'approved')} aria-label={`Approve ${user.Name}`}
                                                                     className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all"
                                                                     title="Approve Dealer"
                                                                 >
                                                                     <CheckCircle2 size={20} />
                                                                 </button>
-                                                                <button
+                                                                <button aria-label={`Reject ${user.Name}`}
                                                                     onClick={() => handleUpdateStatus(user, 'blocked')}
                                                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
                                                                     title="Reject Dealer"
@@ -272,12 +276,12 @@ const ManageUser = () => {
                     <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden transition-all transform animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
 
                         <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-8 text-white relative">
-                            <button onClick={() => setSelectedUser(null)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors bg-white/10 p-2 rounded-xl">
+                            <button aria-label="Close" onClick={() => setSelectedUser(null)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors bg-white/10 p-2 rounded-xl">
                                 <X size={20} />
                             </button>
                             <div className="flex items-center gap-6">
                                 <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center font-black text-3xl backdrop-blur-md">
-                                    {selectedUser.Name.charAt(0)}
+                                    {selectedUser.Name?.charAt(0)?.toUpperCase() || "U"}
                                 </div>
                                 <div>
                                     <h2 className="text-2xl font-black">{selectedUser.Name}</h2>
@@ -345,7 +349,7 @@ const ManageUser = () => {
                                     </>
                                 ) : (
                                     <button
-                                        onClick={() => handleToggleStatus(null, selectedUser)}
+                                        onClick={() => handleUpdateStatus(selectedUser, selectedUser.status === 'approved' ? 'blocked' : 'approved')}
                                         className={`flex-1 py-4 font-black rounded-2xl transition-all flex items-center justify-center gap-2 ${selectedUser.status === 'approved' ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-600 text-white shadow-xl shadow-green-200'}`}
                                     >
                                         {selectedUser.status === 'approved' ? <><AlertCircle size={18} /> Block User</> : <><CheckCircle size={18} /> Unblock User</>}

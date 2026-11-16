@@ -6,9 +6,11 @@ import {
 import Header from "../../components/common/Header";
 import SideBar from "../../components/common/SideBar";
 import api from "../../config/server";
+import { useToast } from "../../context/ToastContext";
 import { DEALER_LINKS } from "../../constants/Links";
 
 const DealerEnquiries = () => {
+  const { showToast } = useToast();
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,7 +43,7 @@ const DealerEnquiries = () => {
       }
     } catch (err) {
       console.error("Error deleting enquiry:", err);
-      alert("Failed to delete enquiry. Please try again.");
+      showToast("Failed to delete enquiry. Please try again.", "error");
     }
   }
   return (
@@ -100,7 +102,7 @@ const DealerEnquiries = () => {
                         {/* 1. Customer Details */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
                                 <User size={20} />
                             </div>
                             <div>
@@ -132,7 +134,7 @@ const DealerEnquiries = () => {
                         {/* 3. Message */}
                         <td className="px-6 py-4">
                           <div className="flex items-start gap-2 max-w-xs">
-                            <MessageSquare size={14} className="text-gray-400 mt-1 flex-shrink-0" />
+                            <MessageSquare size={14} className="text-gray-400 mt-1 shrink-0" />
                             <p className="text-xs text-gray-600 leading-relaxed italic">
                               "{item.message || "No message provided."}"
                             </p>

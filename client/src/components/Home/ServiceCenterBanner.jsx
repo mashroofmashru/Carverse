@@ -1,130 +1,162 @@
-import React, { useState } from 'react';
-import { MapPin, Search, Loader2, Star, Navigation, Phone } from 'lucide-react';
-import api from '../../config/server';
+import React, { useState } from "react";
+import { MapPin, Search, Loader2, Star, Navigation, Phone } from "lucide-react";
+import api from "../../config/server";
+
+const directionsUrl = (center) =>
+  `https://www.google.com/maps/dir/?api=1&destination=${center.location.lat},${center.location.lng}`;
 
 const ServiceCenterBanner = () => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [error, setError] = useState(false);
 
   const handleSearch = async (e) => {
-    if (e.key === 'Enter' && query.trim() !== "") {
-      setLoading(true);
-      setHasSearched(true);
-      try {
-        const res = await api.get(`/service-centers/search?locationName=${query}`);
-        setResults(res.data.centers);
-      } catch (err) {
-        console.error("Search Error:", err);
-        setResults([]);
-      } finally {
-        setLoading(false);
-      }
+    e.preventDefault();
+    const locationName = query.trim();
+    if (!locationName) return;
+
+    setLoading(true);
+    setHasSearched(true);
+    setError(false);
+    try {
+      const res = await api.get("/service-centers/search", { params: { locationName } });
+      setResults(res.data.centers || []);
+    } catch (err) {
+      console.error("Search Error:", err);
+      setResults([]);
+      setError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="font-inter">
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-6">
-          <div className="bg-blue-600 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-6">
+        <div className="bg-blue-600 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
+          <div className="w-full md:w-1/2 p-8 sm:p-10 md:p-16 text-white flex flex-col justify-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Nearest Service Center</h2>
+            <p className="text-blue-100 mb-8 text-lg">
+              Find authorized workshops and dealerships near you for scheduled maintenance.
+            </p>
 
-            <div className="w-full md:w-1/2 p-10 md:p-16 text-white flex flex-col justify-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Nearest Service Center</h2>
-              <p className="text-blue-100 mb-8 text-lg">
-                Find authorized workshops and dealerships near you for scheduled maintenance.
-              </p>
-
-              <div className="relative max-w-sm">
+            <form onSubmit={handleSearch} className="flex gap-2 max-w-md" role="search">
+              <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                  {loading ? <Loader2 className="text-blue-600 animate-spin" size={18} /> : <MapPin className="text-gray-400" size={18} />}
+                  <MapPin className="text-gray-400" size={18} aria-hidden="true" />
                 </div>
+                <label htmlFor="service-city" className="sr-only">
+                  City
+                </label>
                 <input
+                  id="service-city"
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  onKeyDown={handleSearch}
-                  className="block w-full p-4 pl-12 text-sm text-gray-900 rounded-2xl bg-white outline-none"
-                  placeholder="Enter City"
+                  className="block w-full p-4 pl-12 text-sm text-gray-900 rounded-2xl bg-white outline-none focus:ring-4 focus:ring-blue-300"
+                  placeholder="Enter city"
                 />
               </div>
-            </div>
-
-            <div className="w-full md:w-1/2 relative min-h-[300px]">
-              <img src="https://images.unsplash.com/photo-1625047509248-ec889cbff17f?q=80&w=1332" alt="Service" className="absolute inset-0 w-full h-full object-cover" />
-            </div>
+              <button
+                type="submit"
+                disabled={loading || !query.trim()}
+                className="px-5 rounded-2xl bg-gray-900 text-white font-semibold flex items-center gap-2 hover:bg-gray-800 disabled:opacity-60"
+              >
+                {loading ? <Loader2 className="animate-spin" size={18} /> : <Search size={18} />}
+                <span className="hidden sm:inline">Search</span>
+                <span className="sr-only sm:hidden">Search</span>
+              </button>
+            </form>
           </div>
 
-          {hasSearched && (
-            <div className="mt-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {results.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {results.map((center, index) => {
-                  console.log(center)
-                    const handleGetDirections = () => {
-                      const mapUrl = `https://www.google.com/maps/dir/?api=1&destination=${center.location.lat},${center.location.lng}`;
-                      window.open(mapUrl, '_blank');
-                    };
-                    return (
-                      <div
-                        key={center.id || index}
-                        className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between"
-                      >
-                        <div>
+          <div className="w-full md:w-1/2 relative min-h-[300px]">
+            <img
+              src="https://images.unsplash.com/photo-1625047509248-ec889cbff17f?q=80&w=1332"
+              alt="Mechanic servicing a car engine"
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </div>
+        </div>
 
-                          <div className="flex justify-between items-start mb-6">
-                            <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${center.isOpen ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                              }`}>
-                              {center.isOpen ? '● Open Now' : '○ Closed'}
-                            </div>
-                            <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-xl text-gray-700 font-bold text-xs border border-gray-100">
-                              <Star size={14} className="text-yellow-500" fill="currentColor" />
-                              {center.rating} <span className="text-gray-400 font-normal">({center.reviews})</span>
-                            </div>
-                          </div>
-
-                          <div className="mb-6">
-                            <h4 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
-                              {center.name}
-                            </h4>
-                            <div className="flex items-start gap-2 text-gray-500">
-                              <MapPin size={16} className="mt-1 flex-shrink-0 text-blue-500" />
-                              <p className="text-sm leading-relaxed line-clamp-2">{center.address}</p>
-                            </div>
-                          </div>
+        {hasSearched && !loading && (
+          <div className="mt-5 animate-in fade-in slide-in-from-bottom-4 duration-500" aria-live="polite">
+            {error ? (
+              <div className="text-center py-12 bg-red-50 rounded-3xl border border-red-100">
+                <p className="text-red-700 font-medium">Search failed. Please try again in a moment.</p>
+              </div>
+            ) : results.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {results.map((center, index) => (
+                  <div
+                    key={center.id || index}
+                    className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-6">
+                        <div
+                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                            center.isOpen ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {center.isOpen ? "● Open Now" : "○ Closed"}
                         </div>
+                        {center.rating != null && (
+                          <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-xl text-gray-700 font-bold text-xs border border-gray-100">
+                            <Star size={14} className="text-yellow-500" fill="currentColor" aria-hidden="true" />
+                            {center.rating} <span className="text-gray-400 font-normal">({center.reviews})</span>
+                          </div>
+                        )}
+                      </div>
 
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${center.location.lat},${center.location.lng}`, '_blank')}
-                            className="flex-1 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95"
-                          >
-                            <Navigation size={16} />
-                            Directions
-                          </button>
-
-                          <a
-                            href={`tel:${center.phone || '#'}`}
-                            className="p-3 bg-gray-50 text-gray-600 rounded-2xl hover:bg-gray-100 transition-colors border border-gray-200"
-                          >
-                            <Phone size={18} />
-                          </a>
+                      <div className="mb-6">
+                        <h4 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
+                          {center.name}
+                        </h4>
+                        <div className="flex items-start gap-2 text-gray-500">
+                          <MapPin size={16} className="mt-1 shrink-0 text-blue-500" aria-hidden="true" />
+                          <p className="text-sm leading-relaxed line-clamp-2">{center.address}</p>
                         </div>
                       </div>
-                    )
-                  })}
-                </div>
-              ) : !loading && (
-                <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                  <p className="text-gray-400 font-medium">No service centers found in this location. Try a different city.</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-    </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <a
+                        href={directionsUrl(center)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95"
+                      >
+                        <Navigation size={16} aria-hidden="true" />
+                        Directions
+                      </a>
+
+                      {center.phone && (
+                        <a
+                          href={`tel:${center.phone}`}
+                          aria-label={`Call ${center.name}`}
+                          className="p-3 bg-gray-50 text-gray-600 rounded-2xl hover:bg-gray-100 transition-colors border border-gray-200"
+                        >
+                          <Phone size={18} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+                <p className="text-gray-500 font-medium">
+                  No service centers found in this location. Try a different city.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
   );
 };
 

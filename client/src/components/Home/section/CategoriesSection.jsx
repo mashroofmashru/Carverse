@@ -1,40 +1,31 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import CategoryCard from '../CategoryCard';
+import React from "react";
+import { Car, CarFront, CarTaxiFront, Zap } from "lucide-react";
+import CategoryCard from "../CategoryCard";
 
+// `value` must match the category stored on cars (see AddCarForm / car schema)
 const categoryData = [
-  { img: "https://cdn-icons-png.flaticon.com/512/55/55283.png", alt: "SUV", title: "SUVs", value: "SUV" },
-  { img: "https://cdn-icons-png.flaticon.com/512/3202/3202926.png", alt: "Sedan", title: "Sedans", value: "SEDAN" },
-  { img: "https://cdn-icons-png.flaticon.com/512/5035/5035162.png", alt: "Hatchback", title: "Hatchbacks", value: "HATCHBACK" },
-  { img: "https://cdn-icons-png.flaticon.com/512/2087/2087622.png", alt: "Electric", title: "Electric", value: "ELECTRIC" },
+  { icon: CarFront, title: "SUVs", value: "SUVs" },
+  { icon: Car, title: "Sedans", value: "SEDAN" },
+  { icon: CarTaxiFront, title: "Hatchbacks", value: "HATCHBACK" },
+  { icon: Zap, title: "Electric", value: "ELECTRIC" },
 ];
 
 const CategoriesSection = () => {
-  const navigate = useNavigate();
-
-  const handleCategoryClick = (category) => {
-    navigate(`/viewInventory?category=${category}`);
-  };
-
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-6">
-        <div className="flex justify-between items-end mb-10">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">Browse by Category</h2>
-            <p className="text-gray-500 mt-2">Find the perfect body type for your lifestyle.</p>
-          </div>
-          {/* <a href="#" className="text-blue-600 font-semibold hover:underline">View All</a> */}
+        <div className="mb-10">
+          <h2 className="text-3xl font-bold text-gray-900">Browse by Category</h2>
+          <p className="text-gray-500 mt-2">Find the perfect body type for your lifestyle.</p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {categoryData.map((category) => (
             <CategoryCard
-              key={category.title}
-              imgUrl={category.img}
-              altText={category.alt}
+              key={category.value}
+              icon={category.icon}
               title={category.title}
-              onClick={() => handleCategoryClick(category.value)}
+              to={`/viewInventory?category=${encodeURIComponent(category.value)}`}
             />
           ))}
         </div>
