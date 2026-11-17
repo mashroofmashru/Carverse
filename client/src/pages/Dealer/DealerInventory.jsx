@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Car, Search, Eye, Trash2, Fuel, Settings2, Plus, RotateCcw } from "lucide-react";
+import { Car, Search, Eye, Trash2, Fuel, Settings2, Plus, RotateCcw, Pencil } from "lucide-react";
 import DealerLayout from "../../components/common/DealerLayout";
 import TableCard, { Th, THEAD_CLASS, TBODY_CLASS } from "../../components/common/TableCard";
 import StatusBadge from "../../components/common/StatusBadge";
@@ -31,6 +31,7 @@ const DealerInventory = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedCar, setSelectedCar] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [editCar, setEditCar] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, title: "" });
 
   const fetchInventory = useCallback(async () => {
@@ -160,6 +161,11 @@ const DealerInventory = () => {
                   <button type="button" onClick={() => setSelectedCar(car)} className="icon-btn" aria-label={`View ${car.brand} ${car.model}`}>
                     <Eye size={18} aria-hidden="true" />
                   </button>
+                  {car.status !== "SOLD" && (
+                    <button type="button" onClick={() => setEditCar(car)} className="icon-btn" aria-label={`Edit ${car.brand} ${car.model}`}>
+                      <Pencil size={18} aria-hidden="true" />
+                    </button>
+                  )}
                   <button type="button" onClick={() => askDelete(car)} className="icon-btn hover:!bg-red-50 hover:!text-red-700" aria-label={`Delete ${car.brand} ${car.model}`}>
                     <Trash2 size={18} aria-hidden="true" />
                   </button>
@@ -212,6 +218,11 @@ const DealerInventory = () => {
                       <button type="button" onClick={() => setSelectedCar(car)} className="icon-btn" aria-label={`View ${car.brand} ${car.model}`} title="View details">
                         <Eye size={18} aria-hidden="true" />
                       </button>
+                      {car.status !== "SOLD" && (
+                        <button type="button" onClick={() => setEditCar(car)} className="icon-btn" aria-label={`Edit ${car.brand} ${car.model}`} title="Edit details">
+                          <Pencil size={18} aria-hidden="true" />
+                        </button>
+                      )}
                       <button type="button" onClick={() => askDelete(car)} className="icon-btn hover:!bg-red-50 hover:!text-red-700" aria-label={`Delete ${car.brand} ${car.model}`} title="Delete">
                         <Trash2 size={18} aria-hidden="true" />
                       </button>
@@ -325,11 +336,27 @@ const DealerInventory = () => {
 
             <h3 className="mb-2 text-sm font-semibold">Description</h3>
             <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700">{selectedCar.description}</p>
+
+            {selectedCar.status !== "SOLD" && (
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditCar(selectedCar);
+                    setSelectedCar(null);
+                  }}
+                  className="btn btn-ink"
+                >
+                  <Pencil size={18} aria-hidden="true" /> Edit details
+                </button>
+              </div>
+            )}
           </div>
         </Modal>
       )}
 
       {showAdd && <AddCarForm onClose={() => setShowAdd(false)} onAdded={fetchInventory} />}
+      {editCar && <AddCarForm car={editCar} onClose={() => setEditCar(null)} onAdded={fetchInventory} />}
     </DealerLayout>
   );
 };

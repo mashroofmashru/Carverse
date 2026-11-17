@@ -2,6 +2,7 @@ const User = require("../models/userSchema");
 const Car = require("../models/carSchema");
 const Order = require("../models/orderSchema");
 const Contact = require("../models/contactSchema");
+const { deleteImages } = require("../config/cloudinary");
 module.exports = {
     getContacts: async (req, res) => {
         try {
@@ -146,6 +147,9 @@ module.exports = {
             }
 
             await Car.findByIdAndDelete(id);
+            deleteImages(car.images).catch((err) =>
+                console.error("Failed to delete car images from Cloudinary:", err.message)
+            );
 
             res.status(200).json({
                 success: true,
@@ -239,7 +243,12 @@ module.exports = {
 
             // Also delete the car associated with this order
             if (order.carId) {
-                await Car.findByIdAndDelete(order.carId);
+                const deletedCar = await Car.findByIdAndDelete(order.carId);
+                if (deletedCar) {
+                    deleteImages(deletedCar.images).catch((err) =>
+                        console.error("Failed to delete car images from Cloudinary:", err.message)
+                    );
+                }
             }
             await Order.findByIdAndDelete(id);
 

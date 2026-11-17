@@ -7,6 +7,7 @@ var authorize = require("../middlewares/authorizeMiddleware.js")
 
 //dealer routers--------
 router.post('/addcar', auth, authorize(["dealer"]), upload.array("images", 10), dealerHelpers.addCar);
+router.put('/update-car/:id', auth, authorize(["dealer"]), upload.array("images", 10), dealerHelpers.updateCar);
 router.get('/get-inventory', auth, authorize(["dealer"]), dealerHelpers.getInventory);
 router.get('/get-sold-cars', auth, authorize(["dealer"]), dealerHelpers.getSoldCars);
 router.get('/get-enquiries', auth, authorize(["dealer"]), dealerHelpers.getEnquiries);

@@ -75,6 +75,70 @@ module.exports = {
     }
   },
 
+  //updateCar------------------------------------
+  updateCar: async (req, res, next) => {
+    try {
+      const car = await Car.findOne({ _id: req.params.id, dealerId: req.user.id });
+      if (!car) {
+        return res.status(404).json({ success: false, message: "Car not found" });
+      }
+      if (car.status === "SOLD") {
+        return res.status(409).json({ success: false, message: "Sold vehicles can't be edited" });
+      }
+
+      // Existing photos the dealer wants to keep (must already belong to this car), plus any new uploads
+      let keep = car.images;
+      if (req.body.keepImages !== undefined) {
+        let requested;
+        try {
+          requested = JSON.parse(req.body.keepImages);
+        } catch {
+          return res.status(400).json({ success: false, message: "Invalid image list" });
+        }
+        if (!Array.isArray(requested)) {
+          return res.status(400).json({ success: false, message: "Invalid image list" });
+        }
+        keep = car.images.filter((url) => requested.includes(url));
+      }
+      const newFiles = req.files || [];
+      if (keep.length + newFiles.length === 0) {
+        return res.status(400).json({ success: false, message: "At least one image is required" });
+      }
+      if (keep.length + newFiles.length > 10) {
+        return res.status(400).json({ success: false, message: "You can have up to 10 photos" });
+      }
+
+      const uploaded = await Promise.all(newFiles.map((file) => uploadImage(file)));
+      const removed = car.images.filter((url) => !keep.includes(url));
+
+      ["title", "brand", "model", "fuelType", "category", "transmission", "color", "description"].forEach((key) => {
+        if (req.body[key] !== undefined) car[key] = req.body[key];
+      });
+      if (req.body.year !== undefined) car.year = Number(req.body.year);
+      if (req.body.mileage !== undefined) car.mileage = Number(req.body.mileage);
+      if (req.body.price !== undefined) {
+        // Same 10% markup rule as addCar
+        const dealerPrice = Number(req.body.price);
+        car.dealerPrice = dealerPrice;
+        car.profit = dealerPrice * 0.10;
+        car.price = dealerPrice + car.profit;
+      }
+      car.images = [...keep, ...uploaded];
+
+      await car.save();
+
+      if (removed.length) {
+        deleteImages(removed).catch((err) =>
+          console.error("Failed to delete removed car images from Cloudinary:", err.message)
+        );
+      }
+
+      res.status(200).json({ success: true, message: "Car updated successfully", car });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   //deleteCar-------------------------------------
   deleteCar: async (req, res) => {
     try {
@@ -201,7 +265,12 @@ module.exports = {
 
       // Also delete the car associated with this order
       if (order.carId) {
-        await Car.findByIdAndDelete(order.carId);
+        const deletedCar = await Car.findByIdAndDelete(order.carId);
+        if (deletedCar) {
+          deleteImages(deletedCar.images).catch((err) =>
+            console.error("Failed to delete car images from Cloudinary:", err.message)
+          );
+        }
       }
 
       res.status(200).json({ success: true, message: "Sold vehicle record and car details deleted successfully" });

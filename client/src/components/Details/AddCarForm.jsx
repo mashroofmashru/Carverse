@@ -3,6 +3,7 @@ import { X, UploadCloud, Loader2 } from "lucide-react";
 import api from "../../config/server";
 import { useToast } from "../../context/ToastContext";
 import Modal from "../common/Modal";
+import { getImageUrl } from "../../config/imageUrl";
 
 const MAX_IMAGES = 10;
 const MAX_IMAGE_MB = 5;
@@ -30,22 +31,25 @@ const Section = ({ title, children }) => (
   </fieldset>
 );
 
-const AddCarForm = ({ onClose, onAdded }) => {
+// Pass `car` to edit an existing vehicle; omit it to add a new one.
+const AddCarForm = ({ car, onClose, onAdded }) => {
   const { showToast } = useToast();
+  const isEdit = Boolean(car);
 
   const [form, setForm] = useState({
-    title: "",
-    brand: "",
-    model: "",
-    year: "",
-    price: "",
-    fuelType: "PETROL",
-    category: "SEDAN",
-    transmission: "MANUAL",
-    mileage: "",
-    color: "",
-    description: "",
+    title: car?.title ?? "",
+    brand: car?.brand ?? "",
+    model: car?.model ?? "",
+    year: car?.year ?? "",
+    price: car ? (car.dealerPrice ?? car.price) : "",
+    fuelType: car?.fuelType ?? "PETROL",
+    category: car?.category ?? "SEDAN",
+    transmission: car?.transmission ?? "MANUAL",
+    mileage: car?.mileage ?? "",
+    color: car?.color ?? "",
+    description: car?.description ?? "",
   });
+  const [existing, setExisting] = useState(car?.images ?? []); // already-saved photo URLs
   const [images, setImages] = useState([]); // [{ file, url }]
   const [photoError, setPhotoError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -57,6 +61,8 @@ const AddCarForm = ({ onClose, onAdded }) => {
   }, [images]);
   useEffect(() => () => imagesRef.current.forEach((img) => URL.revokeObjectURL(img.url)), []);
 
+  const totalPhotos = existing.length + images.length;
+
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleImageUpload = (e) => {
@@ -65,7 +71,7 @@ const AddCarForm = ({ onClose, onAdded }) => {
 
     const tooBig = picked.filter((f) => f.size > MAX_IMAGE_MB * 1024 * 1024);
     const valid = picked.filter((f) => f.size <= MAX_IMAGE_MB * 1024 * 1024);
-    const room = MAX_IMAGES - images.length;
+    const room = MAX_IMAGES - existing.length - images.length;
 
     const problems = [];
     if (tooBig.length) problems.push(`${tooBig.map((f) => f.name).join(", ")} is larger than ${MAX_IMAGE_MB} MB.`);
@@ -82,7 +88,7 @@ const AddCarForm = ({ onClose, onAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (images.length === 0) {
+    if (existing.length + images.length === 0) {
       setPhotoError("Please add at least one photo.");
       // The photo section can be below the fold in the dialog, so bring the message into view
       requestAnimationFrame(() => document.getElementById("photo-error")?.scrollIntoView({ block: "center", behavior: "smooth" }));
@@ -93,23 +99,25 @@ const AddCarForm = ({ onClose, onAdded }) => {
     const data = new FormData();
     Object.entries(form).forEach(([key, value]) => data.append(key, value));
     images.forEach(({ file }) => data.append("images", file));
+    if (isEdit) data.append("keepImages", JSON.stringify(existing));
 
     setSubmitting(true);
     try {
-      await api.post("/dealer/addcar", data);
-      showToast("Vehicle added successfully");
+      if (isEdit) await api.put(`/dealer/update-car/${car._id}`, data);
+      else await api.post("/dealer/addcar", data);
+      showToast(isEdit ? "Vehicle updated" : "Vehicle added successfully");
       onAdded?.();
       onClose();
     } catch (err) {
       console.error(err.response?.data || err);
-      showToast(err.response?.data?.message || "Failed to upload vehicle. Please try again.", "error");
+      showToast(err.response?.data?.message || isEdit ? "Failed to update vehicle. Please try again." : "Failed to upload vehicle. Please try again.", "error");
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <Modal title="Add new vehicle" subtitle="Fields marked * are required" onClose={onClose} locked={submitting} titleId="add-car-title">
+    <Modal title={isEdit ? "Edit vehicle" : "Add new vehicle"} subtitle="Fields marked * are required" onClose={onClose} locked={submitting} titleId="add-car-title">
       <form onSubmit={handleSubmit}>
         <div className="space-y-7 p-6">
           <Section title="Basics">
@@ -203,19 +211,19 @@ const AddCarForm = ({ onClose, onAdded }) => {
             <label
               className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 text-gray-700 transition focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-ink hover:border-ink hover:bg-mist ${
                 photoError ? "border-red-600" : "border-neutral-300"
-              } ${images.length >= MAX_IMAGES ? "pointer-events-none opacity-60" : ""}`}
+              } ${totalPhotos >= MAX_IMAGES ? "pointer-events-none opacity-60" : ""}`}
             >
               <UploadCloud size={26} aria-hidden="true" />
               <span className="text-sm font-semibold">Click to add photos</span>
               <span className="text-xs text-gray-600">
-                {images.length}/{MAX_IMAGES} added · max {MAX_IMAGE_MB} MB each · the first photo is the cover
+                {totalPhotos}/{MAX_IMAGES} added · max {MAX_IMAGE_MB} MB each · the first photo is the cover
               </span>
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 onChange={handleImageUpload}
-                disabled={images.length >= MAX_IMAGES}
+                disabled={totalPhotos >= MAX_IMAGES}
                 className="sr-only"
                 aria-describedby={photoError ? "photo-error" : undefined}
               />
@@ -226,12 +234,26 @@ const AddCarForm = ({ onClose, onAdded }) => {
               </p>
             )}
 
-            {images.length > 0 && (
+            {totalPhotos > 0 && (
               <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                {existing.map((url, index) => (
+                  <li key={url} className="relative aspect-square overflow-hidden rounded-lg border border-neutral-200">
+                    <img src={getImageUrl(url)} alt={`Photo ${index + 1}`} className="h-full w-full object-cover" />
+                    {index === 0 && <span className="badge badge-brand absolute bottom-1 left-1">Cover</span>}
+                    <button
+                      type="button"
+                      onClick={() => setExisting(existing.filter((u) => u !== url))}
+                      className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black focus-visible:outline-3 focus-visible:outline-brand"
+                      aria-label={`Remove photo ${index + 1}`}
+                    >
+                      <X size={14} aria-hidden="true" />
+                    </button>
+                  </li>
+                ))}
                 {images.map((img, index) => (
                   <li key={img.url} className="relative aspect-square overflow-hidden rounded-lg border border-neutral-200">
                     <img src={img.url} alt={img.file.name} className="h-full w-full object-cover" />
-                    {index === 0 && <span className="badge badge-brand absolute bottom-1 left-1">Cover</span>}
+                    {existing.length === 0 && index === 0 && <span className="badge badge-brand absolute bottom-1 left-1">Cover</span>}
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
@@ -269,10 +291,10 @@ const AddCarForm = ({ onClose, onAdded }) => {
           <button type="submit" disabled={submitting} className="btn btn-brand min-w-36">
             {submitting ? (
               <>
-                <Loader2 size={18} className="animate-spin" aria-hidden="true" /> Uploading…
+                <Loader2 size={18} className="animate-spin" aria-hidden="true" /> {isEdit ? "Saving…" : "Uploading…"}
               </>
             ) : (
-              "Add vehicle"
+              isEdit ? "Save changes" : "Add vehicle"
             )}
           </button>
         </div>

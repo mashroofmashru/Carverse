@@ -37,7 +37,11 @@ const deleteImages = async (urls = []) => {
   const publicIds = urls.map(getPublicId).filter(Boolean);
   if (publicIds.length === 0) return;
 
-  await getCloudinary().api.delete_resources(publicIds);
+  const result = await getCloudinary().api.delete_resources(publicIds);
+  // Cloudinary answers per image ("deleted", "not_found", ...); surface anything that wasn't removed
+  Object.entries(result.deleted || {}).forEach(([id, status]) => {
+    if (status !== "deleted") console.warn(`Cloudinary did not delete ${id}: ${status}`);
+  });
 };
 
 module.exports = { uploadImage, deleteImages };
