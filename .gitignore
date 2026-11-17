@@ -1,0 +1,4 @@
+# Agent skills (installed via npx skills)
+.agents/
+.claude/skills/
+skills-lock.json
