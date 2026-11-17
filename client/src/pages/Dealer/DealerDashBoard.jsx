@@ -113,7 +113,7 @@ const DealerDashboard = () => {
     doc.setFontSize(24);
     doc.setTextColor(37, 99, 235);
     doc.setFont("helvetica", "bold");
-    doc.text("AutoNext", 14, 20);
+    doc.text("Carverse", 14, 20);
 
     // Title
     doc.setFontSize(16);
@@ -219,14 +219,14 @@ const DealerDashboard = () => {
     <>
       {/* ... styles ... */}
 
-      <div className="bg-gray-50 font-inter min-h-screen flex flex-col">
+      <div className="bg-mist font-sans min-h-screen flex flex-col">
         <Header title={"Dealer Control Center"} />
         <div id="dashboard-layout" className="flex min-h-[calc(100vh-4rem)]">
           <SideBar links={DEALER_LINKS} />
 
           <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 overflow-y-auto">
             {/* ... Header and Description ... */}
-            <h1 className="text-3xl font-extrabold text-gray-900 mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 mb-6">
               Dealer Dashboard
             </h1>
             <p className="text-gray-500 mb-8">
@@ -242,7 +242,7 @@ const DealerDashboard = () => {
                   </p>
                   <p className="text-3xl font-bold text-gray-900 mt-1">{stats.activeInventory}</p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-full text-primary">
+                <div className="p-3 bg-brand/25 rounded-full text-ink">
                   <Car className="w-6 h-6" />
                 </div>
               </div>
@@ -311,7 +311,7 @@ const DealerDashboard = () => {
                       Monthly Sales Performance
                     </h2>
                     <div className="flex items-center space-x-2 text-sm text-gray-500">
-                      <div className="w-3 h-3 bg-primary rounded-full"></div>
+                      <div className="w-3 h-3 bg-brand rounded-full"></div>
                       <span>Cars Sold</span>
                     </div>
                   </div>
@@ -328,7 +328,7 @@ const DealerDashboard = () => {
                             <div className="relative w-full flex items-end justify-center h-64">
                               <div
                                 style={{ height: `${height}%` }}
-                                className="w-full max-w-[40px] bg-blue-100 rounded-t-lg group-hover:bg-primary transition-all duration-300 relative"
+                                className="w-full max-w-[40px] bg-brand/25 rounded-t-lg group-hover:bg-brand transition-all duration-300 relative"
                               >
                                 <div className="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded shadow-lg pointer-events-none whitespace-nowrap z-10">
                                   {data.count} Sales
@@ -342,7 +342,7 @@ const DealerDashboard = () => {
                         );
                       })
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <div className="w-full h-full flex items-center justify-center text-gray-500">
                         Loading chart data...
                       </div>
                     )}
@@ -358,7 +358,7 @@ const DealerDashboard = () => {
                     Quick Actions
                   </h2>
                   <div className="space-y-3">
-                    <button onClick={() => setShowAddVehicleform(true)} className="w-full flex items-center justify-center py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition shadow-md shadow-blue-200/50">
+                    <button onClick={() => setShowAddVehicleform(true)} className="w-full flex items-center justify-center py-3 bg-brand text-ink font-semibold rounded-xl hover:bg-brand-dark transition shadow-md shadow-black/10">
                       <Plus className="w-5 h-5 mr-2" />
                       Add New Vehicle{ShowAddVehicleform}
                     </button>

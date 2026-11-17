@@ -61,7 +61,7 @@ const ConfirmationModal = ({
               className={`flex-1 py-3 text-white rounded-xl font-bold transition-all shadow-lg ${
                 type === "danger"
                   ? "bg-red-600 hover:bg-red-700 shadow-red-100"
-                  : "bg-amber-600 hover:bg-amber-700 shadow-amber-100"
+                  : "bg-amber-700 hover:bg-amber-800 shadow-amber-100"
               }`}
             >
               {confirmText}

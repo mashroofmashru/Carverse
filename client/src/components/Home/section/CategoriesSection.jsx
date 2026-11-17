@@ -12,14 +12,17 @@ const categoryData = [
 
 const CategoriesSection = () => {
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-6">
-        <div className="mb-10">
-          <h2 className="text-3xl font-bold text-gray-900">Browse by Category</h2>
-          <p className="text-gray-500 mt-2">Find the perfect body type for your lifestyle.</p>
+    <section data-surface="ink" className="py-16 md:py-20 bg-night text-white border-b border-neutral-200">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="mb-10 max-w-xl">
+          <p className="eyebrow mb-3 text-white">01 — Categories</p>
+          <h2 className="font-display text-4xl md:text-5xl font-bold leading-tight tracking-tight">
+            Browse by body type
+          </h2>
+          <p className="mt-4 text-white/90 text-lg">Find the perfect fit for your lifestyle.</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
           {categoryData.map((category) => (
             <CategoryCard
               key={category.value}

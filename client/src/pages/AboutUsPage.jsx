@@ -1,10 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Navbar from "../components/common/Navbar";
 import Footer from "../components/common/Footer";
 import api from "../config/server";
 import Toast from "../components/common/Toast";
-import { Send, Mail, User, MessageCircle } from "lucide-react";
+import { Send, Mail, User, MessageCircle, Search, ShoppingBag, HelpCircle, LifeBuoy, Check, ArrowRight } from "lucide-react";
+
+const steps = [
+  { icon: Search, title: "Search cars", text: "Browse available cars using filters, images, and detailed listings." },
+  { icon: ShoppingBag, title: "Order cars", text: "Choose your car and place an order with transparent pricing." },
+  { icon: HelpCircle, title: "Submit an enquiry", text: "Have questions or doubts? Fill out the enquiry form for assistance." },
+  { icon: LifeBuoy, title: "Contact support", text: "Facing any issues? Reach out through the contact form for quick help." },
+];
+
+const team = [
+  { name: "Jaideep", role: "Founder & CEO" },
+  { name: "Arshith", role: "Founder & CTO" },
+  { name: "Mirzab", role: "Head of Operations" },
+];
+
+const promises = ["7-Day Money Back Guarantee", "No Hidden Fees, Ever", "Free Home Delivery", "24/7 Roadside Assistance"];
 
 const AboutUsPage = () => {
   const [formData, setFormData] = useState({
@@ -43,277 +58,230 @@ const AboutUsPage = () => {
   };
 
   return (
-    <>
+    <div className="bg-mist text-ink min-h-screen flex flex-col">
+      <Navbar />
 
-      <div className="bg-gray-50 font-inter min-h-screen flex flex-col">
-        <Navbar />
+      <main className="flex-1">
+        {/* Hero */}
+        <section className="bg-white border-b border-neutral-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+            <p className="eyebrow mb-5">About Carverse · Since 2010</p>
+            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.05] tracking-tight max-w-4xl">
+              Redefining the{" "}
+              <span className="inline-block bg-brand px-3 rounded-lg">car buying</span> experience
+            </h1>
+            <p className="mt-8 text-lg text-ink/80 max-w-2xl leading-relaxed">
+              Founded in 2010, Carverse began with a simple mission: to make finding your next vehicle as transparent,
+              enjoyable, and efficient as possible. Today, we are one of the region's most trusted names in automotive
+              excellence.
+            </p>
+            <div className="mt-9 flex flex-wrap gap-4">
+              <Link to="/viewInventory" className="btn btn-brand">
+                Browse inventory <ArrowRight size={18} aria-hidden="true" />
+              </Link>
+              <a href="#contact-us" className="btn btn-light">
+                Get in touch
+              </a>
+            </div>
+          </div>
+        </section>
 
-        {/* Main Content Area */}
-        <main className="flex-1">
-          {/* Hero Section */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-            <div className="text-center mb-16">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
-                Redefining the <span className="text-primary">Car Buying</span> Experience
-              </h1>
-              <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Founded in 2010, AutoNext began with a simple mission: to make finding your next vehicle
-                as transparent, enjoyable, and efficient as possible. Today, we are one of the region's
-                most trusted names in automotive excellence.
+        {/* Story, vision, commitment */}
+        <section data-surface="ink" className="bg-night text-white border-b border-neutral-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 grid lg:grid-cols-12 gap-10">
+            <div className="lg:col-span-5">
+              <p className="eyebrow text-brand mb-3">01 — Our story</p>
+              <h2 className="font-display text-4xl md:text-5xl font-bold leading-tight tracking-tight">
+                From local lot to digital ecosystem
+              </h2>
+            </div>
+            <div className="lg:col-span-7 space-y-5 text-lg leading-relaxed text-white/95">
+              <p>
+                What began as a small local dealership has grown into a fully connected digital and physical automotive
+                ecosystem. Recognizing the inefficiencies and lack of transparency in the traditional car buying model,
+                we rebuilt the experience from the ground up.
+              </p>
+              <p>
+                Carverse is founded on technology and trust, offering real time inventory updates, secure digital
+                payments, and integrated service history so you have complete transparency and control before ever
+                stepping onto our lot.
               </p>
             </div>
 
-            {/* About Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-              {/* Our Story & Values */}
-              <div className="lg:col-span-2 space-y-10">
-                <section className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Story</h2>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    What began as a small local dealership has grown into a fully connected digital and physical automotive ecosystem. Recognizing the inefficiencies and lack of transparency in the traditional car buying model, we rebuilt the experience from the ground up.
-                  </p>
-                  <p className="text-gray-600 leading-relaxed">
-                    AutoNext is founded on technology and trust, offering real time inventory updates, secure digital payments, and integrated service history so you have complete transparency and control before ever stepping onto our lot.
-                  </p>
-                </section>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-primary">
-                    <h3 className="font-bold text-gray-900 mb-2">Our Vision</h3>
-                    <p className="text-sm text-gray-600">To be the world’s most consumer-centric automotive platform where buyers feel empowered and excited.</p>
-                  </div>
-                  <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-primary">
-                    <h3 className="font-bold text-gray-900 mb-2">Our Commitment</h3>
-                    <p className="text-sm text-gray-600">Every vehicle undergoes a 150-point inspection, ensuring safety and quality that lasts for miles.</p>
-                  </div>
+            <div className="lg:col-span-12 grid md:grid-cols-2 gap-6">
+              {[
+                { title: "Our vision", text: "To be the world’s most consumer-centric automotive platform where buyers feel empowered and excited." },
+                { title: "Our commitment", text: "Every vehicle undergoes a 150-point inspection, ensuring safety and quality that lasts for miles." },
+              ].map((item) => (
+                <div key={item.title} className="bg-mist text-ink rounded-xl border border-neutral-200 p-6 shadow-sm">
+                  <h3 className="font-display text-xl font-bold tracking-tight mb-2">{item.title}</h3>
+                  <p className="text-ink/80 leading-relaxed">{item.text}</p>
                 </div>
-
-                {/* Contact Section */}
-                <section className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 mt-10">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <Send className="text-primary" size={24} /> Get in Touch
-                  </h2>
-                  <form id="contact-us" onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
-                          <input
-                            type="text"
-                            name="name"
-                            required
-                            value={formData.name}
-                            onChange={handleChange}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                            placeholder="John Doe"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
-                          <input
-                            type="email"
-                            name="email"
-                            required
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                            placeholder="john@example.com"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                      <div className="relative">
-                        <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
-                        <input
-                          type="text"
-                          name="subject"
-                          required
-                          value={formData.subject}
-                          onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                          placeholder="How can we help?"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                      <textarea
-                        name="message"
-                        required
-                        value={formData.message}
-                        onChange={handleChange}
-                        rows="4"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
-                        placeholder="Tell us more about your inquiry..."
-                      ></textarea>
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full sm:w-auto px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-700 transition transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                      {loading ? "Sending..." : "Send Message"}
-                    </button>
-                  </form>
-                </section>
-              </div>
-
-              {/* Sidebar: Leadership/Contact Placeholder */}
-              <div className="lg:col-span-1 space-y-8">
-                {/* Leadership Section */}
-                <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                    <svg className="w-6 h-6 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    Leadership
-                  </h3>
-
-                  <div className="space-y-6">
-                    {[
-                      { name: "Jaideep", role: "Founder & CEO" },
-                      { name: "Arshith", role: "Founder & CTO" },
-                      { name: "Mirzab", role: "Head of Operations" }
-                    ].map((member, i) => (
-                      <div key={i} className="flex items-center space-x-4">
-                        <div className="h-12 w-12 rounded-full bg-gray-200 shrink-0">
-                          <img src={`https://xsgames.co/randomusers/assets/avatars/male/${i + 1}.jpg`} alt={member.name} className="rounded-full" />
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">{member.name}</div>
-                          <div className="text-xs text-primary font-semibold uppercase">{member.role}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Why Choose Us Section */}
-                <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-8 rounded-2xl shadow-xl text-white">
-                  <h3 className="text-xl font-bold mb-6 flex items-center text-gray-900">
-                    <span className="bg-white/20 p-2 rounded-lg mr-3">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </span>
-                    Why Choose Us
-                  </h3>
-                  <ul className="space-y-4">
-                    {[
-                      "7-Day Money Back Guarantee",
-                      "No Hidden Fees, Ever",
-                      "Free Home Delivery",
-                      "24/7 Roadside Assistance"
-                    ].map((item, idx) => (
-                      <li key={idx} className="flex items-start">
-                        <span className="mr-3 mt-1 text-blue-300">•</span>
-                        <span className="font-medium text-white">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Awards Section */}
-                <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                    <svg
-                      className="w-6 h-6 mr-2 text-primary"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                    How AutoNext Works
-                  </h3>
-
-                  <div className="space-y-4">
-                    {/* Step 1 */}
-                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
-                      <div className="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
-                        1
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-900 text-sm">
-                          Search Cars
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Browse available cars using filters, images, and detailed listings
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Step 2 */}
-                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
-                      <div className="bg-green-100 text-green-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
-                        2
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-900 text-sm">
-                          Order Cars
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Choose your car and place an order with transparent pricing
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Step 3 */}
-                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
-                      <div className="bg-purple-100 text-purple-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
-                        3
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-900 text-sm">
-                          Submit an Enquiry
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Have questions or doubts? Fill out the enquiry form for assistance
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Step 4 */}
-                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
-                      <div className="bg-amber-100 text-amber-600 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
-                        4
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-900 text-sm">
-                          Contact Support
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Facing any issues? Reach out through the contact form for quick help
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
-        </main>
-        <Footer />
-        <Toast
-          isOpen={toast.show}
-          show={toast.show}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ ...toast, show: false })}
-        />
-      </div>
-    </>
+        </section>
+
+        {/* How it works */}
+        <section className="bg-mist border-b border-neutral-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+            <p className="eyebrow mb-3">02 — How it works</p>
+            <h2 className="font-display text-4xl md:text-5xl font-bold leading-tight tracking-tight mb-12">
+              Four steps to your next car
+            </h2>
+            <ol className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {steps.map(({ icon, title, text }, i) => {
+                const Icon = icon;
+                return (
+                  <li key={title} className="bg-white rounded-xl border border-neutral-200 p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-6">
+                      <span className="font-display text-4xl font-bold text-ink">0{i + 1}</span>
+                      <Icon size={26} aria-hidden="true" />
+                    </div>
+                    <h3 className="font-display text-lg font-bold tracking-tight">{title}</h3>
+                    <p className="mt-2 text-sm text-ink/75 leading-relaxed">{text}</p>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        </section>
+
+        {/* Team + promises */}
+        <section data-surface="ink" className="bg-night text-white border-b border-neutral-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 grid lg:grid-cols-2 gap-10">
+            <div>
+              <p className="eyebrow text-brand mb-3">03 — Leadership</p>
+              <h2 className="font-display text-4xl font-bold leading-tight tracking-tight mb-8">The team</h2>
+              <ul className="space-y-4">
+                {team.map((member) => (
+                  <li key={member.name} className="flex items-center gap-4 bg-mist text-ink rounded-xl border border-neutral-200 p-4 shadow-sm">
+                    <span
+                      className="h-12 w-12 shrink-0 flex items-center justify-center bg-brand rounded-xl border border-neutral-200 font-display text-xl font-bold"
+                      aria-hidden="true"
+                    >
+                      {member.name[0]}
+                    </span>
+                    <div>
+                      <p className="font-display text-lg font-bold leading-tight">{member.name}</p>
+                      <p className="eyebrow">{member.role}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <p className="eyebrow text-brand mb-3">04 — Why choose us</p>
+              <h2 className="font-display text-4xl font-bold leading-tight tracking-tight mb-8">Our promises</h2>
+              <ul className="space-y-4">
+                {promises.map((item) => (
+                  <li key={item} className="flex items-center gap-4 border-2 border-white/40 p-4">
+                    <span className="h-8 w-8 shrink-0 flex items-center justify-center bg-brand text-ink rounded-xl border border-neutral-200" aria-hidden="true">
+                      <Check size={18} strokeWidth={3} />
+                    </span>
+                    <span className="font-display text-lg font-bold tracking-tight">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact */}
+        <section className="bg-white">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
+            <p className="eyebrow mb-3">05 — Contact</p>
+            <h2 className="font-display text-4xl md:text-5xl font-bold leading-tight tracking-tight mb-8 flex items-center gap-3">
+              <Send className="text-ink shrink-0" size={32} aria-hidden="true" /> Get in touch
+            </h2>
+
+            <form id="contact-us" onSubmit={handleSubmit} className="bg-white rounded-xl border border-neutral-200 shadow-lg p-6 sm:p-8 space-y-6 scroll-mt-28">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="contact-name" className="label">Full name</label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-ink/60" size={18} aria-hidden="true" />
+                    <input
+                      id="contact-name"
+                      type="text"
+                      name="name"
+                      required
+                      autoComplete="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="field pl-11"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="contact-email" className="label">Email address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-ink/60" size={18} aria-hidden="true" />
+                    <input
+                      id="contact-email"
+                      type="email"
+                      name="email"
+                      required
+                      autoComplete="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="field pl-11"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="contact-subject" className="label">Subject</label>
+                <div className="relative">
+                  <MessageCircle className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-ink/60" size={18} aria-hidden="true" />
+                  <input
+                    id="contact-subject"
+                    type="text"
+                    name="subject"
+                    required
+                    value={formData.subject}
+                    onChange={handleChange}
+                    className="field pl-11"
+                    placeholder="How can we help?"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="contact-message" className="label">Message</label>
+                <textarea
+                  id="contact-message"
+                  name="message"
+                  required
+                  value={formData.message}
+                  onChange={handleChange}
+                  rows="5"
+                  className="field resize-none"
+                  placeholder="Tell us more about your inquiry..."
+                ></textarea>
+              </div>
+
+              <button type="submit" disabled={loading} className="btn btn-brand w-full sm:w-auto">
+                {loading ? "Sending..." : "Send message"}
+              </button>
+            </form>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
+      <Toast
+        isOpen={toast.show}
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
+    </div>
   );
 };
 

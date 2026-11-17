@@ -22,12 +22,12 @@ const footerLinks = [
 
 const Footer = () => {
   return (
-    <footer className="bg-slate-950 text-slate-300">
+    <footer data-surface="ink" className="bg-ink text-white border-t-4 border-brand">
       <div className="container mx-auto px-4 sm:px-6 pt-14 pb-10">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-12">
           <div className="col-span-2 md:col-span-6">
             <Logo dark />
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/80">
               The trusted marketplace to buy cars directly from authorized dealers. Transparent pricing and verified
               inventory.
             </p>
@@ -35,11 +35,14 @@ const Footer = () => {
 
           {footerLinks.map((col) => (
             <div key={col.title} className="md:col-span-3">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-white">{col.title}</h3>
+              <h3 className="eyebrow text-brand">{col.title}</h3>
               <ul className="mt-4 space-y-3 text-sm">
                 {col.links.map((link) => (
                   <li key={link.name}>
-                    <Link to={link.to} className="text-slate-400 hover:text-white transition">
+                    <Link
+                      to={link.to}
+                      className="text-white/80 hover:text-brand hover:underline underline-offset-4 transition focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-brand"
+                    >
                       {link.name}
                     </Link>
                   </li>
@@ -49,8 +52,8 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-8 text-sm text-slate-500">
-          <p>&copy; {new Date().getFullYear()} AutoNext. All rights reserved.</p>
+        <div className="mt-12 border-t border-white/15 pt-8 text-sm text-white/70">
+          <p>&copy; {new Date().getFullYear()} Carverse. All rights reserved.</p>
         </div>
       </div>
     </footer>

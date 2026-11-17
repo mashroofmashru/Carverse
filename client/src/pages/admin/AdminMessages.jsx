@@ -72,8 +72,8 @@ const AdminMessages = () => {
     const handleReply = () => {
         if (!selectedMessage) return;
 
-        const subject = encodeURIComponent("Response for the contact form in Autonext");
-        const body = encodeURIComponent(`Dear ${selectedMessage.name},\n\nThank you for reaching out to us.\n\nRegarding your message:\n"${selectedMessage.message}"\n\n[Your response here]\n\nBest regards,\nAutoNext Support Team`);
+        const subject = encodeURIComponent("Response for the contact form in Carverse");
+        const body = encodeURIComponent(`Dear ${selectedMessage.name},\n\nThank you for reaching out to us.\n\nRegarding your message:\n"${selectedMessage.message}"\n\n[Your response here]\n\nBest regards,\nCarverse Support Team`);
 
         window.location.href = `mailto:${selectedMessage.email}?subject=${subject}&body=${body}`;
 
@@ -103,7 +103,7 @@ const AdminMessages = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'new': return 'bg-blue-100 text-blue-800';
+            case 'new': return 'bg-brand/25 text-ink';
             case 'read': return 'bg-gray-100 text-gray-800';
             case 'responded': return 'bg-green-100 text-green-800';
             default: return 'bg-gray-100 text-gray-800';
@@ -111,7 +111,7 @@ const AdminMessages = () => {
     };
 
     return (
-        <div className="bg-gray-50 font-inter min-h-screen flex flex-col text-gray-900">
+        <div className="bg-mist font-sans min-h-screen flex flex-col text-gray-900">
             <Header title={"Admin Portal"} />
 
             <div className="flex flex-1 relative min-h-[calc(100vh-4rem)]">
@@ -122,8 +122,8 @@ const AdminMessages = () => {
                         {/* Header */}
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                             <div>
-                                <h1 className="text-2xl font-extrabold flex items-center gap-2">
-                                    <MessageSquareText className="text-blue-600" /> Messages
+                                <h1 className="text-2xl font-bold flex items-center gap-2">
+                                    <MessageSquareText className="text-ink" /> Messages
                                 </h1>
                                 <p className="text-sm text-gray-500">
                                     View and manage inquiries from the contact form.
@@ -136,25 +136,25 @@ const AdminMessages = () => {
                                     <select
                                         value={filterStatus}
                                         onChange={(e) => setFilterStatus(e.target.value)}
-                                        className="appearance-none pl-10 pr-8 py-2 border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-sm font-medium"
+                                        className="appearance-none pl-11 pr-8 py-2 border border-gray-200 rounded-xl bg-white focus:focus:outline-2 focus:outline-ink focus:ring-2 focus:ring-brand/60 cursor-pointer text-sm font-medium"
                                     >
                                         <option value="all">All Status</option>
                                         <option value="new">New</option>
                                         <option value="read">Read</option>
                                         <option value="responded">Responded</option>
                                     </select>
-                                    <Filter className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={16} />
+                                    <Filter className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
                                 </div>
 
                                 {/* Search */}
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
+                                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
                                     <input
                                         type="text"
                                         placeholder="Search messages..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64"
+                                        className="pl-11 pr-4 py-2 border border-gray-200 rounded-xl focus:focus:outline-2 focus:outline-ink focus:ring-2 focus:ring-brand/60 w-full md:w-64"
                                     />
                                 </div>
                             </div>
@@ -166,24 +166,24 @@ const AdminMessages = () => {
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-gray-50/50 border-b border-gray-200">
-                                            <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Sender</th>
-                                            <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Subject</th>
-                                            <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Message</th>
-                                            <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Status</th>
-                                            <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Date</th>
-                                            <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Action</th>
+                                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Sender</th>
+                                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Subject</th>
+                                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Message</th>
+                                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Status</th>
+                                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-right">Date</th>
+                                            <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-right">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
                                         {loading ? (
-                                            <tr><td colSpan="6" className="text-center py-20 text-gray-400 animate-pulse">Loading Messages...</td></tr>
+                                            <tr><td colSpan="6" className="text-center py-20 text-gray-500 animate-pulse">Loading Messages...</td></tr>
                                         ) : filteredMessages.length === 0 ? (
-                                            <tr><td colSpan="6" className="text-center py-20 text-gray-400">No messages found.</td></tr>
+                                            <tr><td colSpan="6" className="text-center py-20 text-gray-500">No messages found.</td></tr>
                                         ) : filteredMessages.map((msg) => (
                                             <tr key={msg._id} className="group hover:bg-gray-50 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                                                        <div className="w-10 h-10 rounded-full bg-brand/25 text-ink flex items-center justify-center font-bold">
                                                             {msg.name.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div>
@@ -209,7 +209,7 @@ const AdminMessages = () => {
                                                 <td className="px-6 py-4 text-right">
                                                     <button
                                                         onClick={() => handleViewMessage(msg)}
-                                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        className="p-2 text-ink hover:bg-brand/20 rounded-lg transition-colors"
                                                         title="View Details"
                                                     >
                                                         <Eye size={18} />
@@ -230,20 +230,20 @@ const AdminMessages = () => {
                         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                                 <h3 className="text-xl font-bold text-gray-900">Message Details</h3>
-                                <button aria-label="Close" onClick={() => setSelectedMessage(null)} className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-full transition">
+                                <button aria-label="Close" onClick={() => setSelectedMessage(null)} className="text-gray-500 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-full transition">
                                     <X size={20} />
                                 </button>
                             </div>
 
                             <div className="p-6 space-y-6">
                                 <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl shrink-0">
+                                    <div className="w-12 h-12 rounded-full bg-brand/25 text-ink flex items-center justify-center font-bold text-xl shrink-0">
                                         {selectedMessage.name.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="flex-1">
                                         <h4 className="text-lg font-bold text-gray-900">{selectedMessage.name}</h4>
-                                        <p className="text-blue-600 text-sm font-medium">{selectedMessage.email}</p>
-                                        <p className="text-gray-400 text-xs mt-1">{formatDate(selectedMessage.createdAt)}</p>
+                                        <p className="text-ink text-sm font-medium">{selectedMessage.email}</p>
+                                        <p className="text-gray-500 text-xs mt-1">{formatDate(selectedMessage.createdAt)}</p>
                                     </div>
                                     <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${getStatusColor(selectedMessage.status)}`}>
                                         {selectedMessage.status}
@@ -274,7 +274,7 @@ const AdminMessages = () => {
                                 )}
                                 <button
                                     onClick={handleReply}
-                                    className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-lg shadow-blue-200"
+                                    className="px-6 py-2 bg-brand text-ink font-bold rounded-lg hover:bg-brand-dark transition flex items-center gap-2 shadow-lg shadow-black/10"
                                 >
                                     <Send size={18} /> Reply via Email
                                 </button>

@@ -76,21 +76,21 @@ const DealerApproval = () => {
     };
 
     return (
-        <div className="bg-gray-50 min-h-screen font-inter flex flex-col">
+        <div className="bg-mist min-h-screen font-sans flex flex-col">
             <Header title="Dealer Verification" showMenu={false} />
 
             <div className="flex-1 flex items-center justify-center p-4 py-12">
                 <div className="bg-white max-w-xl w-full rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
 
                     {/* Top Banner */}
-                    <div className="bg-blue-600 p-8 text-white text-center">
-                        <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md">
+                    <div className="bg-brand p-8 text-ink text-center">
+                        <div className="w-16 h-16 bg-black/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                             {user?.isApplied ? <Clock size={32} /> : <Building2 size={32} />}
                         </div>
                         <h1 className="text-2xl font-bold">
                             {user?.isApplied ? "Account Under Review" : "Complete Your Profile"}
                         </h1>
-                        <p className="text-blue-100 mt-2 text-sm">
+                        <p className="text-ink/75 mt-2 text-sm">
                             {user?.isApplied
                                 ? "We're verifying your dealership details."
                                 : "Provide your dealership information to request admin approval."}
@@ -122,7 +122,7 @@ const DealerApproval = () => {
                                     <button
                                         onClick={checkStatus}
                                         disabled={checking}
-                                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-200 flex items-center justify-center gap-2 disabled:opacity-70"
+                                        className="w-full py-4 bg-brand hover:bg-brand-dark text-ink font-bold rounded-2xl transition-all shadow-lg shadow-black/10 flex items-center justify-center gap-2 disabled:opacity-70"
                                     >
                                         {checking ? <RotateCcw size={20} className="animate-spin" /> : "Check Status Again"}
                                     </button>
@@ -139,45 +139,45 @@ const DealerApproval = () => {
                             /* FORM VIEW - To collect dealer details */
                             <form onSubmit={handleSubmitDetails} className="space-y-6">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Dealership Name</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Dealership Name</label>
                                     <div className="relative">
-                                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                        <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
                                         <input
                                             type="text"
                                             required
                                             value={dealershipName}
                                             onChange={(e) => setDealershipName(e.target.value)}
-                                            className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+                                            className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-brand/60 focus:border-ink focus:outline-2 focus:outline-ink transition-all"
                                             placeholder="e.g. Prime Motors Ltd."
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Dealership Address</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Dealership Address</label>
                                     <div className="relative">
-                                        <MapPin className="absolute left-4 top-5 text-gray-400" size={18} />
+                                        <MapPin className="absolute left-3.5 top-3.5 pointer-events-none text-gray-500" size={18} />
                                         <textarea
                                             required
                                             rows="3"
                                             value={dealershipAddress}
                                             onChange={(e) => setDealershipAddress(e.target.value)}
-                                            className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all resize-none"
+                                            className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-brand/60 focus:border-ink focus:outline-2 focus:outline-ink transition-all resize-none"
                                             placeholder="Complete physical address of your showroom..."
                                         ></textarea>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Business License / Tax ID</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Business License / Tax ID</label>
                                     <div className="relative">
-                                        <FileBadge className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                        <FileBadge className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
                                         <input
                                             type="text"
                                             required
                                             value={licenseNumber}
                                             onChange={(e) => setLicenseNumber(e.target.value)}
-                                            className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+                                            className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:ring-brand/60 focus:border-ink focus:outline-2 focus:outline-ink transition-all"
                                             placeholder="e.g. LIC-987654321"
                                         />
                                     </div>
@@ -187,7 +187,7 @@ const DealerApproval = () => {
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition-all shadow-xl shadow-blue-200 flex items-center justify-center gap-2 disabled:opacity-70"
+                                        className="w-full py-4 bg-brand text-ink font-bold rounded-2xl hover:bg-brand-dark transition-all shadow-xl shadow-black/10 flex items-center justify-center gap-2 disabled:opacity-70"
                                     >
                                         {submitting ? <RotateCcw size={20} className="animate-spin" /> : <><Send size={18} /> Submit for Approval</>}
                                     </button>
@@ -204,8 +204,8 @@ const DealerApproval = () => {
                         )}
 
                         <div className="mt-8 pt-6 border-t border-gray-100 text-center">
-                            <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
-                                <ShieldCheck size={12} /> Your data is encrypted and secure with AutoNext.
+                            <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
+                                <ShieldCheck size={12} /> Your data is encrypted and secure with Carverse.
                             </p>
                         </div>
                     </div>

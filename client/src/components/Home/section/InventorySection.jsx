@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import CarCard from "../CarCard";
 import api from "../../../config/server";
 import { toCarCard } from "../../../utils/car";
@@ -28,33 +29,38 @@ const InventorySection = () => {
   }, [fetchCars]);
 
   return (
-    <section className="py-16 bg-slate-50">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900">Featured Dealer Inventory</h2>
-          <p className="text-gray-500 mt-2">Top picks available for immediate delivery.</p>
+    <section className="py-16 md:py-20 bg-mist border-b border-neutral-200">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="mb-12 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+          <div className="max-w-xl">
+            <p className="eyebrow mb-3 text-ink">02 — Featured</p>
+            <h2 className="font-display text-4xl md:text-5xl font-bold leading-tight tracking-tight">
+              Dealer picks
+            </h2>
+            <p className="mt-4 text-ink/80 text-lg">Top cars available for immediate delivery.</p>
+          </div>
+          <Link to="/viewInventory" className="btn btn-ink self-start sm:self-auto">
+            View all inventory <ArrowRight size={18} aria-hidden="true" />
+          </Link>
         </div>
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" aria-label="Loading cars">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="h-96 bg-gray-200 rounded-2xl animate-pulse" />
+              <div key={n} className="h-96 bg-mist-deep border border-neutral-200 animate-pulse" />
             ))}
           </div>
         ) : error ? (
-          <div className="text-center py-12 bg-white rounded-2xl border border-gray-100">
-            <p className="text-gray-600 font-medium">We couldn't load cars right now.</p>
-            <button
-              type="button"
-              onClick={fetchCars}
-              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
-            >
+          <div className="text-center py-14 bg-white rounded-xl border border-neutral-200 shadow-lg">
+            <p className="font-display text-xl font-bold">We couldn't load cars right now.</p>
+            <button type="button" onClick={fetchCars} className="btn btn-brand mt-6">
               Try again
             </button>
           </div>
         ) : cars.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200">
-            <p className="text-gray-600 font-medium">New listings are coming soon. Check back shortly!</p>
+          <div className="text-center py-14 bg-white border-2 border-dashed border-neutral-300">
+            <p className="font-display text-xl font-bold">New listings are coming soon</p>
+            <p className="mt-2 text-ink/70">Check back shortly.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -63,15 +69,6 @@ const InventorySection = () => {
             ))}
           </div>
         )}
-
-        <div className="mt-12 text-center">
-          <Link
-            to="/viewInventory"
-            className="inline-block px-8 py-3 bg-gray-900 text-white rounded-lg font-semibold hover:bg-gray-700 transition shadow-lg"
-          >
-            View All Inventory
-          </Link>
-        </div>
       </div>
     </section>
   );

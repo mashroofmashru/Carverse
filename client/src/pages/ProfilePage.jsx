@@ -80,7 +80,7 @@ const ProfilePage = () => {
 
 
     return (
-        <div className="bg-gray-50 min-h-screen flex flex-col font-inter">
+        <div className="bg-mist min-h-screen flex flex-col font-sans">
             <Navbar />
 
             <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
@@ -89,18 +89,18 @@ const ProfilePage = () => {
                     {/* Sidebar Navigation */}
                     <div className="lg:w-64 shrink-0">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
-                            <div className="p-6 bg-gradient-to-br from-blue-600 to-blue-800 text-white text-center">
-                                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3 border-2 border-white/30">
+                            <div className="p-6 bg-brand text-ink text-center">
+                                <div className="w-20 h-20 bg-black/10 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3">
                                     {name ? name.charAt(0).toUpperCase() : "U"}
                                 </div>
-                                <h2 className="font-bold text-lg truncate text-white">{name || "User"}</h2>
-                                <p className="text-blue-100 text-xs truncate">{email}</p>
+                                <h2 className="font-bold text-lg truncate text-ink">{name || "User"}</h2>
+                                <p className="text-ink/75 text-xs truncate">{email}</p>
                             </div>
                             <div className="p-2 space-y-1">
                                 <button
                                     onClick={() => setActiveTab("profile")}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${activeTab === "profile"
-                                        ? "bg-blue-50 text-blue-700 font-bold"
+                                        ? "bg-brand/10 text-ink font-bold"
                                         : "text-gray-600 hover:bg-gray-50"
                                         }`}
                                 >
@@ -109,7 +109,7 @@ const ProfilePage = () => {
                                 <button
                                     onClick={() => setActiveTab("orders")}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${activeTab === "orders"
-                                        ? "bg-blue-50 text-blue-700 font-bold"
+                                        ? "bg-brand/10 text-ink font-bold"
                                         : "text-gray-600 hover:bg-gray-50"
                                         }`}
                                 >
@@ -131,7 +131,7 @@ const ProfilePage = () => {
                                     <button
                                         onClick={handleUpdate}
                                         disabled={isSaving}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-200 flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95"
+                                        className="bg-brand hover:bg-brand-dark text-ink px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-black/10 flex items-center gap-2 disabled:opacity-50 transition-all active:scale-95"
                                     >
                                         {isSaving ? <RefreshCcw className="animate-spin" size={18} /> : <Save size={18} />}
                                         {isSaving ? "Saving..." : "Save Changes"}
@@ -142,12 +142,12 @@ const ProfilePage = () => {
                                     <div className="md:col-span-2">
                                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Full Name</label>
                                         <div className="relative">
-                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
+                                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
                                             <input
                                                 type="text"
                                                 value={name}
                                                 onChange={(e) => setName(e.target.value)}
-                                                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand/60 focus:outline-2 focus:outline-ink transition-all"
                                                 placeholder="John Doe"
                                             />
                                         </div>
@@ -156,12 +156,12 @@ const ProfilePage = () => {
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Email Address</label>
                                         <div className="relative">
-                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
+                                            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
                                             <input
                                                 type="email"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
-                                                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand/60 focus:outline-2 focus:outline-ink transition-all"
                                                 placeholder="john@example.com"
                                             />
                                         </div>
@@ -170,12 +170,12 @@ const ProfilePage = () => {
                                     <div>
                                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Phone Number</label>
                                         <div className="relative">
-                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
+                                            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
                                             <input
                                                 type="tel"
                                                 value={phone}
                                                 onChange={(e) => setPhone(e.target.value)}
-                                                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-brand/60 focus:outline-2 focus:outline-ink transition-all"
                                                 placeholder="+91 98765 43210"
                                             />
                                         </div>
@@ -193,7 +193,7 @@ const ProfilePage = () => {
 
                                 {loadingOrders ? (
                                     <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
-                                        <RefreshCcw className="animate-spin text-blue-600 mx-auto mb-3" size={32} />
+                                        <RefreshCcw className="animate-spin text-ink mx-auto mb-3" size={32} />
                                         <p className="text-gray-500 font-medium">Loading your orders...</p>
                                     </div>
                                 ) : orders.length === 0 ? (
@@ -201,7 +201,7 @@ const ProfilePage = () => {
                                         <Package className="text-gray-300 mx-auto mb-4" size={48} />
                                         <h3 className="text-lg font-bold text-gray-900">No Orders Yet</h3>
                                         <p className="text-gray-500 mb-6">You haven't placed any orders with us yet.</p>
-                                        <button className="px-6 py-2 bg-blue-600 text-white rounded-xl font-bold">Browse Cars</button>
+                                        <button className="px-6 py-2 bg-brand text-ink rounded-xl font-bold">Browse Cars</button>
                                     </div>
                                 ) : (
                                     <div className="grid gap-6">
@@ -213,7 +213,7 @@ const ProfilePage = () => {
                                                         {order.carId?.images?.[0] ? (
                                                             <img src={getImageUrl(order.carId.images[0])} alt={order.carId.title} className="w-full h-full object-cover" />
                                                         ) : (
-                                                            <div className="flex items-center justify-center h-full text-gray-400">
+                                                            <div className="flex items-center justify-center h-full text-gray-500">
                                                                 <Package size={32} />
                                                             </div>
                                                         )}
@@ -232,11 +232,11 @@ const ProfilePage = () => {
 
                                                         <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-600">
                                                             <div className="flex items-center gap-1.5">
-                                                                <Calendar size={14} className="text-gray-400" />
+                                                                <Calendar size={14} className="text-gray-500" />
                                                                 {formatDate(order.createdAt)}
                                                             </div>
                                                             <div className="flex items-center gap-1.5">
-                                                                <Receipt size={14} className="text-gray-400" />
+                                                                <Receipt size={14} className="text-gray-500" />
                                                                 {formatINR(order.amount)}
                                                             </div>
                                                         </div>
@@ -244,7 +244,7 @@ const ProfilePage = () => {
                                                         <div className="mt-4 pt-4 border-t border-gray-50 flex justify-end">
                                                             <button
                                                                 onClick={() => setSelectedOrder(order)}
-                                                                className="text-blue-600 font-bold text-sm hover:underline"
+                                                                className="text-ink font-bold text-sm hover:underline"
                                                             >
                                                                 View Details
                                                             </button>
@@ -276,12 +276,12 @@ const ProfilePage = () => {
                             {/* Order Header */}
                             <div className="flex justify-between items-start bg-gray-50 p-4 rounded-xl border border-gray-100">
                                 <div>
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">Order ID</span>
+                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Order ID</span>
                                     <span className="font-mono font-bold text-gray-900">#{selectedOrder._id.slice(-8).toUpperCase()}</span>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">Total Amount</span>
-                                    <span className="text-xl font-black text-blue-600">{formatINR(selectedOrder.amount)}</span>
+                                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">Total Amount</span>
+                                    <span className="text-xl font-bold text-ink">{formatINR(selectedOrder.amount)}</span>
                                 </div>
                             </div>
 

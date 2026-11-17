@@ -1,8 +1,10 @@
-import { LayoutDashboard, Users2, Car, ShieldAlert, CalendarClock, MessageSquareText, Settings, FileCheck } from "lucide-react";
+import { LayoutDashboard, Users2, Store, ClipboardCheck, Car, ShieldAlert, CalendarClock, MessageSquareText, Settings, FileCheck } from "lucide-react";
 
 export const ADMIN_LINKS = [
   { title: "Dashboard", path: "/admin", icon: LayoutDashboard },
-  { title: "User Management", path: "/admin/users", icon: Users2 },
+  { title: "Customers", path: "/admin/users", icon: Users2 },
+  { title: "Dealers", path: "/admin/dealers", icon: Store },
+  { title: "Dealer Requests", path: "/admin/dealer-requests", icon: ClipboardCheck },
   { title: "Inventory", path: "/admin/cars", icon: Car },
   { title: "Sold Cars", path: "/admin/sold-cars", icon: FileCheck },
   { title: "Messages", path: "/admin/messages", icon: MessageSquareText },

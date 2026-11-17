@@ -76,7 +76,7 @@ const DealerInventory = () => {
   });
 
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col font-inter text-gray-900">
+    <div className="bg-mist min-h-screen flex flex-col font-sans text-gray-900">
       <Header title="Dealer Control Center" />
 
       <div className="flex flex-1">
@@ -84,16 +84,16 @@ const DealerInventory = () => {
 
         <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-extrabold mb-8">Master Inventory</h1>
+            <h1 className="text-2xl font-bold mb-8">Master Inventory</h1>
 
             {/* Filters Bar */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
                 <input
                   type="text"
                   placeholder="Search brand or model..."
-                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                  className="w-full pl-11 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-brand/60 focus:outline-2 focus:outline-ink transition"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -127,18 +127,18 @@ const DealerInventory = () => {
               <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                   <tr className="bg-gray-50/50 border-b border-gray-200">
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Vehicle Details</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Specs</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Pricing</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Status</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">Actions</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Vehicle Details</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Specs</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Pricing</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {loading ? (
-                    <tr><td colSpan="5" className="text-center py-20 text-gray-400 animate-pulse">Loading Inventory...</td></tr>
+                    <tr><td colSpan="5" className="text-center py-20 text-gray-500 animate-pulse">Loading Inventory...</td></tr>
                   ) : filteredCars.map((car) => (
-                    <tr key={car._id} className="hover:bg-blue-50/30 transition-colors group">
+                    <tr key={car._id} className="hover:bg-brand/20 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <img
@@ -160,13 +160,13 @@ const DealerInventory = () => {
                         ₹{car.price.toLocaleString('en-IN')}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase ${car.status === 'SOLD' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${car.status === 'SOLD' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                           {car.status === 'SOLD' ? 'SOLD' : 'AVAILABLE'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => setSelectedCar(car)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><Eye size={18} /></button>
+                          <button onClick={() => setSelectedCar(car)} className="p-2 text-ink hover:bg-brand/20 rounded-lg transition"><Eye size={18} /></button>
                           {/* UPDATED DELETE BUTTON */}
                           <button
                             onClick={() => setDeleteConfirm({ show: true, id: car._id, title: `${car.brand} ${car.model}` })}
@@ -243,7 +243,7 @@ const DealerInventory = () => {
                 <DetailBox label="Color" value={selectedCar.color} />
                 <DetailBox label="Category" value={selectedCar.category} />
               </div>
-              <h3 className="font-bold text-gray-400 uppercase text-[10px] tracking-widest mb-2">Description</h3>
+              <h3 className="font-bold text-gray-500 uppercase text-[10px] tracking-widest mb-2">Description</h3>
               <p className="text-gray-600 text-sm leading-relaxed">{selectedCar.description}</p>
             </div>
           </div>

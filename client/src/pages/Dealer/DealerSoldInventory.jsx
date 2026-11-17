@@ -69,7 +69,7 @@ const DealerSoldInventory = () => {
   });
 
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col font-inter text-gray-900">
+    <div className="bg-mist min-h-screen flex flex-col font-sans text-gray-900">
       <Header title="Dealer Control Center" />
 
       <div className="flex flex-1">
@@ -77,16 +77,16 @@ const DealerSoldInventory = () => {
 
         <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-extrabold mb-8">Sold Vehicles History</h1>
+            <h1 className="text-2xl font-bold mb-8">Sold Vehicles History</h1>
 
             {/* Filters Bar */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
                 <input
                   type="text"
                   placeholder="Search by vehicle or buyer name..."
-                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                  className="w-full pl-11 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-brand/60 focus:outline-2 focus:outline-ink transition"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -98,20 +98,20 @@ const DealerSoldInventory = () => {
               <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                   <tr className="bg-gray-50/50 border-b border-gray-200">
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Vehicle Details</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Buyer Info</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Sale Price</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Sale Date</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">Actions</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Vehicle Details</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Buyer Info</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Sale Price</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Sale Date</th>
+                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {loading ? (
-                    <tr><td colSpan="5" className="text-center py-20 text-gray-400 animate-pulse">Loading Sales History...</td></tr>
+                    <tr><td colSpan="5" className="text-center py-20 text-gray-500 animate-pulse">Loading Sales History...</td></tr>
                   ) : filteredOrders.length === 0 ? (
-                    <tr><td colSpan="5" className="text-center py-20 text-gray-400">No sold vehicles history found.</td></tr>
+                    <tr><td colSpan="5" className="text-center py-20 text-gray-500">No sold vehicles history found.</td></tr>
                   ) : filteredOrders.map((order) => (
-                    <tr key={order._id} className="hover:bg-blue-50/30 transition-colors group">
+                    <tr key={order._id} className="hover:bg-brand/20 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
                           <img
@@ -128,13 +128,13 @@ const DealerSoldInventory = () => {
                       </td >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                          <div className="w-8 h-8 rounded-full bg-brand/25 flex items-center justify-center text-ink font-bold text-xs">
                             {order.userId?.Name?.charAt(0) || "U"}
                           </div>
                           <div>
                             <div className="text-sm font-bold text-gray-900">{order.customerDetails?.fullName || order.userId?.Name || "Unknown"}</div>
                             <div className="text-xs text-gray-500">{order.customerDetails?.city ? `${order.customerDetails.city}, ${order.customerDetails.zipCode}` : order.userId?.Email}</div>
-                            {order.customerDetails?.address && <div className="text-[10px] text-gray-400 mt-0.5 truncate max-w-[150px]">{order.customerDetails.address}</div>}
+                            {order.customerDetails?.address && <div className="text-[10px] text-gray-500 mt-0.5 truncate max-w-[150px]">{order.customerDetails.address}</div>}
                           </div>
                         </div>
                       </td>
@@ -149,7 +149,7 @@ const DealerSoldInventory = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => setSelectedOrder(order)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><Eye size={18} /></button>
+                          <button onClick={() => setSelectedOrder(order)} className="p-2 text-ink hover:bg-brand/20 rounded-lg transition"><Eye size={18} /></button>
                           {/* Removing Delete for Sold Cars for now or keeping it? The user might want to hide history. Keeping it but warning. */}
                           <button
                             onClick={() => setDeleteConfirm({ show: true, id: order._id, title: `${order.carId ? `${order.carId.brand} ${order.carId.model}` : "Deleted car"} (History)` })}
@@ -230,7 +230,7 @@ const DealerSoldInventory = () => {
               {/* SECTION 1: VEHICLE INFORMATION */}
               <div>
                 <h3 className="flex items-center gap-2 font-bold text-gray-900 text-sm uppercase tracking-wider mb-4 border-b pb-2">
-                  <Car size={16} className="text-blue-600" /> Vehicle Information
+                  <Car size={16} className="text-ink" /> Vehicle Information
                 </h3>
                 <div className="flex flex-col sm:flex-row gap-6">
                   <img
@@ -240,16 +240,16 @@ const DealerSoldInventory = () => {
                   />
                   <div className="flex-1 space-y-3">
                     <div>
-                      <div className="text-lg font-black text-gray-900">{selectedOrder.carId ? `${selectedOrder.carId.brand} ${selectedOrder.carId.model}` : "Deleted car"}</div>
+                      <div className="text-lg font-bold text-gray-900">{selectedOrder.carId ? `${selectedOrder.carId.brand} ${selectedOrder.carId.model}` : "Deleted car"}</div>
                       <div className="text-sm text-gray-500">{selectedOrder.carId?.year} • {selectedOrder.carId?.fuelType}</div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-xs">
                       <div className="bg-gray-50 p-2 rounded-lg">
-                        <span className="text-gray-400 block mb-0.5">Transmission</span>
+                        <span className="text-gray-500 block mb-0.5">Transmission</span>
                         <span className="font-bold text-gray-700">{selectedOrder.carId?.transmission}</span>
                       </div>
                       <div className="bg-gray-50 p-2 rounded-lg">
-                        <span className="text-gray-400 block mb-0.5">Color</span>
+                        <span className="text-gray-500 block mb-0.5">Color</span>
                         <span className="font-bold text-gray-700">{selectedOrder.carId?.color}</span>
                       </div>
                     </div>
@@ -261,7 +261,7 @@ const DealerSoldInventory = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <h3 className="flex items-center gap-2 font-bold text-gray-900 text-sm uppercase tracking-wider mb-4 border-b pb-2">
-                    <User size={16} className="text-purple-600" /> Buyer Details
+                    <User size={16} className="text-ink" /> Buyer Details
                   </h3>
                   <div className="space-y-4">
                     <DetailBox label="Full Name" value={selectedOrder.customerDetails?.fullName || selectedOrder.userId?.Name || "N/A"} />
@@ -284,7 +284,7 @@ const DealerSoldInventory = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="text-gray-400 italic text-sm">No shipping address recorded.</div>
+                    <div className="text-gray-500 italic text-sm">No shipping address recorded.</div>
                   )}
                 </div>
               </div>
@@ -297,7 +297,7 @@ const DealerSoldInventory = () => {
                 <div className="bg-green-50/50 p-5 rounded-2xl border border-green-100 grid grid-cols-2 md:grid-cols-4 gap-6">
                   <div>
                     <div className="text-xs text-green-700/60 uppercase font-bold mb-1">Amount</div>
-                    <div className="text-lg font-black text-green-800">₹{selectedOrder.amount?.toLocaleString('en-IN')}</div>
+                    <div className="text-lg font-bold text-green-800">₹{selectedOrder.amount?.toLocaleString('en-IN')}</div>
                   </div>
                   <div>
                     <div className="text-xs text-green-700/60 uppercase font-bold mb-1">Status</div>

@@ -33,20 +33,25 @@ const ServiceCenterBanner = () => {
   };
 
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-6">
-        <div className="bg-blue-600 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row">
-          <div className="w-full md:w-1/2 p-8 sm:p-10 md:p-16 text-white flex flex-col justify-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Nearest Service Center</h2>
-            <p className="text-blue-100 mb-8 text-lg">
+    <section data-surface="ink" className="py-16 md:py-20 bg-night text-white">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="grid md:grid-cols-12 gap-10 items-center">
+          <div className="md:col-span-6">
+            <p className="eyebrow mb-3 text-white">03 — Service</p>
+            <h2 className="font-display text-4xl md:text-5xl font-bold leading-tight tracking-tight">
+              Nearest service center
+            </h2>
+            <p className="mt-5 text-white/90 text-lg max-w-md">
               Find authorized workshops and dealerships near you for scheduled maintenance.
             </p>
 
-            <form onSubmit={handleSearch} className="flex gap-2 max-w-md" role="search">
+            <form onSubmit={handleSearch} className="mt-8 flex flex-col sm:flex-row gap-3 max-w-lg" role="search">
               <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
-                  <MapPin className="text-gray-400" size={18} aria-hidden="true" />
-                </div>
+                <MapPin
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/60 pointer-events-none"
+                  size={18}
+                  aria-hidden="true"
+                />
                 <label htmlFor="service-city" className="sr-only">
                   City
                 </label>
@@ -55,91 +60,79 @@ const ServiceCenterBanner = () => {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="block w-full p-4 pl-12 text-sm text-gray-900 rounded-2xl bg-white outline-none focus:ring-4 focus:ring-blue-300"
+                  className="field pl-11 h-full"
                   placeholder="Enter city"
                 />
               </div>
-              <button
-                type="submit"
-                disabled={loading || !query.trim()}
-                className="px-5 rounded-2xl bg-gray-900 text-white font-semibold flex items-center gap-2 hover:bg-gray-800 disabled:opacity-60"
-              >
-                {loading ? <Loader2 className="animate-spin" size={18} /> : <Search size={18} />}
-                <span className="hidden sm:inline">Search</span>
-                <span className="sr-only sm:hidden">Search</span>
+              <button type="submit" disabled={loading || !query.trim()} className="btn btn-ink">
+                {loading ? <Loader2 className="animate-spin" size={18} aria-hidden="true" /> : <Search size={18} aria-hidden="true" />}
+                Search
               </button>
             </form>
           </div>
 
-          <div className="w-full md:w-1/2 relative min-h-[300px]">
+          <div className="md:col-span-6 relative">
+            <div className="absolute inset-0 translate-x-3 translate-y-3 bg-brand rounded-xl border border-neutral-200" aria-hidden="true" />
             <img
               src="https://images.unsplash.com/photo-1625047509248-ec889cbff17f?q=80&w=1332"
               alt="Mechanic servicing a car engine"
               loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover"
+              className="relative w-full aspect-[4/3] object-cover rounded-xl border border-neutral-200"
             />
           </div>
         </div>
 
         {hasSearched && !loading && (
-          <div className="mt-5 animate-in fade-in slide-in-from-bottom-4 duration-500" aria-live="polite">
+          <div className="mt-12 animate-in fade-in slide-in-from-bottom-4 duration-500" aria-live="polite">
             {error ? (
-              <div className="text-center py-12 bg-red-50 rounded-3xl border border-red-100">
-                <p className="text-red-700 font-medium">Search failed. Please try again in a moment.</p>
+              <div className="text-center py-12 bg-mist text-ink rounded-xl border border-neutral-200 shadow-lg">
+                <p className="font-display text-lg font-bold">Search failed. Please try again in a moment.</p>
               </div>
             ) : results.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-ink">
                 {results.map((center, index) => (
                   <div
                     key={center.id || index}
-                    className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between"
+                    className="bg-mist p-6 rounded-xl border border-neutral-200 shadow-sm flex flex-col justify-between"
                   >
                     <div>
-                      <div className="flex justify-between items-start mb-6">
-                        <div
-                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                            center.isOpen ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      <div className="flex justify-between items-start mb-5 gap-2">
+                        <span
+                          className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
+                            center.isOpen ? "bg-brand text-ink" : "bg-neutral-200 text-ink"
                           }`}
                         >
-                          {center.isOpen ? "● Open Now" : "○ Closed"}
-                        </div>
+                          {center.isOpen ? "Open now" : "Closed"}
+                        </span>
                         {center.rating != null && (
-                          <div className="flex items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-xl text-gray-700 font-bold text-xs border border-gray-100">
-                            <Star size={14} className="text-yellow-500" fill="currentColor" aria-hidden="true" />
-                            {center.rating} <span className="text-gray-400 font-normal">({center.reviews})</span>
-                          </div>
+                          <span className="flex items-center gap-1.5 text-xs font-bold">
+                            <Star size={14} className="text-brand-dark" fill="currentColor" aria-hidden="true" />
+                            {center.rating} <span className="font-normal text-ink/70">({center.reviews})</span>
+                          </span>
                         )}
                       </div>
 
-                      <div className="mb-6">
-                        <h4 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
-                          {center.name}
-                        </h4>
-                        <div className="flex items-start gap-2 text-gray-500">
-                          <MapPin size={16} className="mt-1 shrink-0 text-blue-500" aria-hidden="true" />
-                          <p className="text-sm leading-relaxed line-clamp-2">{center.address}</p>
-                        </div>
+                      <h4 className="font-display text-lg font-bold leading-tight line-clamp-1">{center.name}</h4>
+                      <div className="mt-2 flex items-start gap-2 text-ink/80">
+                        <MapPin size={16} className="mt-0.5 shrink-0 text-ink" aria-hidden="true" />
+                        <p className="text-sm leading-relaxed line-clamp-2">{center.address}</p>
                       </div>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="mt-6 flex gap-3">
                       <a
                         href={directionsUrl(center)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95"
+                        className="btn btn-brand flex-1"
                       >
                         <Navigation size={16} aria-hidden="true" />
                         Directions
                       </a>
 
                       {center.phone && (
-                        <a
-                          href={`tel:${center.phone}`}
-                          aria-label={`Call ${center.name}`}
-                          className="p-3 bg-gray-50 text-gray-600 rounded-2xl hover:bg-gray-100 transition-colors border border-gray-200"
-                        >
-                          <Phone size={18} />
+                        <a href={`tel:${center.phone}`} aria-label={`Call ${center.name}`} className="btn btn-light px-3">
+                          <Phone size={18} aria-hidden="true" />
                         </a>
                       )}
                     </div>
@@ -147,10 +140,8 @@ const ServiceCenterBanner = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                <p className="text-gray-500 font-medium">
-                  No service centers found in this location. Try a different city.
-                </p>
+              <div className="text-center py-16 border-2 border-dashed border-white/30">
+                <p className="font-medium">No service centers found in this location. Try a different city.</p>
               </div>
             )}
           </div>

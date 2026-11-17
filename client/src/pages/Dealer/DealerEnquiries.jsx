@@ -47,7 +47,7 @@ const DealerEnquiries = () => {
     }
   }
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col font-inter text-gray-900">
+    <div className="bg-mist min-h-screen flex flex-col font-sans text-gray-900">
       <Header title="Dealer Control Center" />
       
       <div className="flex flex-1">
@@ -59,7 +59,7 @@ const DealerEnquiries = () => {
             {/* Page Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
               <div>
-                <h1 className="text-2xl font-extrabold">Customer Enquiries</h1>
+                <h1 className="text-2xl font-bold">Customer Enquiries</h1>
                 <p className="text-sm text-gray-500">You have {enquiries.length} total enquiries from potential buyers.</p>
               </div>
             </div>
@@ -67,11 +67,11 @@ const DealerEnquiries = () => {
             {/* Search Bar */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" size={18} />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
                 <input 
                   type="text" 
                   placeholder="Search by customer name or vehicle..." 
-                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition"
+                  className="w-full pl-11 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-brand/60 focus:outline-2 focus:outline-ink transition"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -84,25 +84,25 @@ const DealerEnquiries = () => {
                 <table className="w-full text-left border-collapse min-w-[1000px]">
                   <thead>
                     <tr className="bg-gray-50/50 border-b border-gray-200">
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Customer</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Interested Vehicle</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Message</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Date Received</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Interested Vehicle</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Message</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date Received</th>
+                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {loading ? (
-                       <tr><td colSpan="5" className="text-center py-20 text-gray-400 animate-pulse">Loading Enquiries...</td></tr>
+                       <tr><td colSpan="5" className="text-center py-20 text-gray-500 animate-pulse">Loading Enquiries...</td></tr>
                     ) : filteredEnquiries.length === 0 ? (
-                        <tr><td colSpan="5" className="text-center py-20 text-gray-400">No enquiries found.</td></tr>
+                        <tr><td colSpan="5" className="text-center py-20 text-gray-500">No enquiries found.</td></tr>
                     ) : filteredEnquiries.map((item) => (
-                      <tr key={item._id} className="hover:bg-blue-50/30 transition-colors group">
+                      <tr key={item._id} className="hover:bg-brand/20 transition-colors group">
                         
                         {/* 1. Customer Details */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 bg-brand/25 text-ink rounded-full flex items-center justify-center shrink-0">
                                 <User size={20} />
                             </div>
                             <div>
@@ -125,7 +125,7 @@ const DealerEnquiries = () => {
                             <span className="text-sm font-bold text-gray-800">
                               {item.carId?.brand} {item.carId?.model}
                             </span>
-                            <span className="text-[10px] text-blue-600 font-bold uppercase mt-1 tracking-tight">
+                            <span className="text-[10px] text-ink font-bold uppercase mt-1 tracking-tight">
                               ID: {item.carId?._id.slice(-6)}
                             </span>
                           </div>
@@ -134,7 +134,7 @@ const DealerEnquiries = () => {
                         {/* 3. Message */}
                         <td className="px-6 py-4">
                           <div className="flex items-start gap-2 max-w-xs">
-                            <MessageSquare size={14} className="text-gray-400 mt-1 shrink-0" />
+                            <MessageSquare size={14} className="text-gray-500 mt-1 shrink-0" />
                             <p className="text-xs text-gray-600 leading-relaxed italic">
                               "{item.message || "No message provided."}"
                             </p>
@@ -144,7 +144,7 @@ const DealerEnquiries = () => {
                         {/* 4. Timestamp */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2 text-xs text-gray-600 font-medium">
-                            <Calendar size={14} className="text-gray-400" />
+                            <Calendar size={14} className="text-gray-500" />
                             {new Date(item.createdAt).toLocaleDateString('en-IN', {
                                 day: '2-digit',
                                 month: 'short',
@@ -158,12 +158,12 @@ const DealerEnquiries = () => {
                           <div className="flex justify-end gap-2">
                             <a 
                                 href={`mailto:${item.email}`}
-                                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="p-2 text-gray-500 hover:text-ink hover:bg-brand/20 rounded-lg transition-colors"
                                 title="Reply via Email"
                             >
                               <Mail size={18} />
                             </a>
-                            <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                            <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                               <Trash2 size={18} />
                             </button>
                           </div>

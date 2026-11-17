@@ -54,7 +54,9 @@ function App() {
       {/* Admin routes */}
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
         <Route path="/admin" element={<AdminDashBoard />} />
-        <Route path="/admin/users" element={<ManageUser />} />
+        <Route path="/admin/users" element={<ManageUser view="customers" />} />
+        <Route path="/admin/dealers" element={<ManageUser view="dealers" />} />
+        <Route path="/admin/dealer-requests" element={<ManageUser view="requests" />} />
         <Route path="/admin/cars" element={<AdminInventory />} />
         <Route path="/admin/sold-cars" element={<AdminSoldInventory />} />
         <Route path="/admin/messages" element={<AdminMessages />} />

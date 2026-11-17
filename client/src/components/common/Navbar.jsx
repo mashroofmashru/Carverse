@@ -57,15 +57,15 @@ const Navbar = () => {
     <header
       className={`sticky top-0 z-50 border-b transition-all duration-300 ${
         scrolled
-          ? "bg-white/90 backdrop-blur-md border-gray-200/80 shadow-[0_8px_30px_-12px_rgba(15,23,42,0.18)]"
-          : "bg-white border-transparent"
+          ? "bg-white/90 backdrop-blur-md border-neutral-200 shadow-sm"
+          : "bg-white border-neutral-200"
       }`}
     >
       <nav className="container mx-auto flex h-16 md:h-[72px] items-center justify-between px-4 sm:px-6" aria-label="Main">
         <Logo onClick={closeMenus} />
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-1 rounded-full bg-gray-100/80 p-1">
+        <div className="hidden md:flex items-center gap-1 rounded-full bg-mist-deep border border-neutral-200 p-1">
           {navLinks.map((link) => (
             <NavLink
               key={link.name}
@@ -73,7 +73,7 @@ const Navbar = () => {
               end={link.href === "/"}
               className={({ isActive }) =>
                 `rounded-full px-5 py-2 text-sm font-semibold transition-all ${
-                  isActive ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                  isActive ? "bg-brand text-ink" : "text-ink hover:bg-white"
                 }`
               }
             >
@@ -88,13 +88,13 @@ const Navbar = () => {
             <div className="hidden md:flex items-center gap-2">
               <Link
                 to="/login"
-                className="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-blue-600 transition"
+                className="px-4 py-2 text-sm font-semibold text-ink hover:text-ink/70 transition"
               >
                 Log in
               </Link>
               <Link
                 to="/signup"
-                className="rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-600/25 hover:bg-blue-700 transition"
+                className="rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-ink hover:bg-brand-dark transition"
               >
                 Get started
               </Link>
@@ -106,12 +106,12 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={() => setOpenMenu((o) => !o)}
-                className="flex items-center gap-2 rounded-full border border-gray-200 py-1 pl-1 pr-3 hover:border-blue-300 transition"
+                className="flex items-center gap-2 rounded-full border border-neutral-200 py-1 pl-1 pr-3 hover:border-ink transition"
                 aria-label="Account menu"
                 aria-haspopup="menu"
                 aria-expanded={openMenu}
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-sm font-bold text-white">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-bold text-ink">
                   {initial}
                 </span>
                 <span className="max-w-[120px] truncate text-sm font-semibold text-gray-700">{user.Name}</span>
@@ -181,11 +181,11 @@ const Navbar = () => {
         <div
           id="mobile-menu"
           onClick={closeMenus}
-          className="md:hidden border-t border-gray-100 bg-white px-4 pb-6 pt-2 shadow-lg animate-in slide-in-from-top-2 fade-in duration-200"
+          className="md:hidden border-t border-neutral-200 bg-mist px-4 pb-6 pt-2 shadow-lg animate-in slide-in-from-top-2 fade-in duration-200"
         >
           {user && (
             <div className="flex items-center gap-3 rounded-2xl bg-gray-50 p-3 mb-2">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-700 font-bold text-white">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand font-bold text-ink">
                 {initial}
               </span>
               <div className="min-w-0">
@@ -203,7 +203,7 @@ const Navbar = () => {
                 end={link.href === "/"}
                 className={({ isActive }) =>
                   `rounded-xl px-4 py-3 font-semibold ${
-                    isActive ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-50"
+                    isActive ? "bg-brand text-ink" : "text-ink hover:bg-mist-deep"
                   }`
                 }
               >
@@ -241,7 +241,7 @@ const Navbar = () => {
                 </Link>
                 <Link
                   to="/signup"
-                  className="rounded-xl bg-blue-600 px-4 py-3 text-center font-semibold text-white hover:bg-blue-700"
+                  className="rounded-xl bg-brand px-4 py-3 text-center font-semibold text-ink hover:bg-brand-dark"
                 >
                   Get started
                 </Link>

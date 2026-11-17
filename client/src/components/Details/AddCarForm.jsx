@@ -10,7 +10,7 @@ const MIN_YEAR = 1990;
 const MAX_YEAR = new Date().getFullYear() + 1;
 
 const inputClass =
-  "w-full px-4 py-3 border border-gray-300 rounded-xl bg-white outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition";
+  "w-full px-4 py-3 border border-gray-300 rounded-xl bg-white outline-none focus:ring-2 focus:ring-brand/60 focus:border-ink transition";
 
 const Field = ({ label, htmlFor, children }) => (
   <div>
@@ -119,7 +119,7 @@ const AddCarForm = ({ onClose, onAdded }) => {
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+            className="p-2 rounded-full text-gray-500 hover:text-gray-600 hover:bg-gray-100"
             aria-label="Close"
           >
             <X />
@@ -222,7 +222,7 @@ const AddCarForm = ({ onClose, onAdded }) => {
             <span className="block text-sm font-medium text-gray-700 mb-1">
               Photos ({images.length}/{MAX_IMAGES}, max {MAX_IMAGE_MB} MB each)
             </span>
-            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-blue-400 hover:bg-blue-50/40 transition text-gray-500">
+            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-ink hover:bg-brand/20 transition text-gray-500">
               <UploadCloud aria-hidden="true" />
               <span className="text-sm font-medium">Click to add photos</span>
               <input
@@ -257,7 +257,7 @@ const AddCarForm = ({ onClose, onAdded }) => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+            className="w-full py-3.5 bg-brand text-ink rounded-xl font-bold hover:bg-brand-dark disabled:opacity-60 disabled:cursor-not-allowed transition"
           >
             {submitting ? "Uploading…" : "Add Vehicle"}
           </button>

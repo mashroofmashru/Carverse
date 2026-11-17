@@ -8,12 +8,14 @@ import Footer from '../components/common/Footer';
 
 function Home() {
   return (
-    <div className="bg-white text-gray-800 font-sans antialiased">
+    <div className="bg-white text-ink font-sans antialiased">
       <Navbar />
-      <HeroSection />
-      <CategoriesSection />
-      <InventorySection />
-      <ServiceCenterBanner />
+      <main>
+        <HeroSection />
+        <CategoriesSection />
+        <InventorySection />
+        <ServiceCenterBanner />
+      </main>
       <Footer />
     </div>
   );
