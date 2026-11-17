@@ -1,323 +1,349 @@
-import React, { useState, useEffect } from "react";
-import useModal from "../../hooks/useModal";
-import {
-  Car, Search, Eye, Trash2,
-  Fuel, Settings2, Gauge, Palette, X,
-  AlertCircle, CheckCircle2, User, Calendar
-} from "lucide-react";
-import Header from "../../components/common/Header";
-import SideBar from "../../components/common/SideBar";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { Search, Eye, Trash2, Car, User, CheckCircle2, IndianRupee, CalendarDays, MapPin, CreditCard, RotateCcw } from "lucide-react";
+import DealerLayout from "../../components/common/DealerLayout";
+import TableCard, { Th, THEAD_CLASS, TBODY_CLASS } from "../../components/common/TableCard";
+import StatusBadge from "../../components/common/StatusBadge";
+import EmptyState from "../../components/common/EmptyState";
+import Modal from "../../components/common/Modal";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
+import StatCard from "../../components/Dashboard/StateCard";
 import DetailBox from "../../components/Dashboard/DetailBox";
+import { useToast } from "../../context/ToastContext";
 import api from "../../config/server";
-import { DEALER_LINKS } from "../../constants/Links";
 import { getImageUrl } from "../../config/imageUrl";
+import { formatINR, label } from "../../utils/format";
+
+const shortDate = (d) => new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+const carName = (order) => (order.carId ? `${order.carId.brand} ${order.carId.model}` : "Deleted car");
+const buyerName = (order) => order.customerDetails?.fullName || order.userId?.Name || "Unknown";
+
+const Thumb = ({ order, className = "h-14 w-20" }) => (
+  <span className={`block shrink-0 overflow-hidden rounded-lg bg-mist-deep ${className}`}>
+    {order.carId?.images?.[0] && <img src={getImageUrl(order.carId.images[0])} alt="" className="h-full w-full object-cover" />}
+  </span>
+);
 
 const DealerSoldInventory = () => {
-  const [inventory, setInventory] = useState([]);
+  const { showToast } = useToast();
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
-
-  // --- Alert & Notification States ---
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, title: "" });
-  useModal(!!selectedOrder, () => setSelectedOrder(null));
-  useModal(deleteConfirm.show, () => setDeleteConfirm((prev) => ({ ...prev, show: false })));
-  const [notification, setNotification] = useState({ show: false, message: "", type: "success" });
 
-  useEffect(() => {
-    fetchInventory();
-  }, []);
-
-  const fetchInventory = async () => {
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    setError(false);
     try {
       const res = await api.get("/dealer/get-sold-cars");
-      setInventory(res.data.orders);
+      setOrders(Array.isArray(res.data.orders) ? res.data.orders : []);
     } catch (err) {
-      console.error("Error fetching inventory:", err);
+      console.error("Error fetching sold cars:", err);
+      setError(true);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // --- TOAST NOTIFICATION HELPER ---
-  const showToast = (message, type = "success") => {
-    setNotification({ show: true, message, type });
-    setTimeout(() => setNotification({ show: false, message: "", type: "success" }), 3000);
-  };
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   const handleConfirmDelete = async () => {
     try {
       await api.delete(`/dealer/delete-order-car/${deleteConfirm.id}`);
-      setInventory(inventory.filter(order => order._id !== deleteConfirm.id));
-      showToast("Sold vehicle record deleted successfully", "success");
+      setOrders((prev) => prev.filter((o) => o._id !== deleteConfirm.id));
+      setSelectedOrder((cur) => (cur?._id === deleteConfirm.id ? null : cur));
+      showToast("Sale record deleted");
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to delete sold vehicle record", "error");
+      showToast(err.response?.data?.message || "Failed to delete the sale record", "error");
     } finally {
       setDeleteConfirm({ show: false, id: null, title: "" });
     }
   };
 
-  // Filter Logic
-  const filteredOrders = (Array.isArray(inventory) ? inventory : []).filter((order) => {
-    const matchesSearch =
-      searchTerm.trim() === "" ||
-      order.carId?.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.carId?.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.userId?.Name?.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredOrders = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return orders;
+    return orders.filter(
+      (o) =>
+        o.carId?.brand?.toLowerCase().includes(q) ||
+        o.carId?.model?.toLowerCase().includes(q) ||
+        o.userId?.Name?.toLowerCase().includes(q) ||
+        o.customerDetails?.fullName?.toLowerCase().includes(q)
+    );
+  }, [orders, searchTerm]);
 
-    return matchesSearch;
-  });
+  // Summary strip (always for all sales, not just the searched ones)
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.amount || 0), 0);
+  const latestSale = orders.reduce((latest, o) => (!latest || new Date(o.createdAt) > new Date(latest) ? o.createdAt : latest), null);
+
+  const askDelete = (order) =>
+    setDeleteConfirm({ show: true, id: order._id, title: `${carName(order)} (sale record)` });
+
+  const renderBody = () => {
+    if (loading) return <div className="card animate-pulse p-16 text-center text-gray-600">Loading sales history…</div>;
+    if (error) {
+      return (
+        <div className="card">
+          <EmptyState icon={RotateCcw} title="Couldn't load your sales" hint="Please check your connection and try again.">
+            <button type="button" onClick={fetchOrders} className="btn btn-brand">
+              Try again
+            </button>
+          </EmptyState>
+        </div>
+      );
+    }
+    if (orders.length === 0) {
+      return (
+        <div className="card">
+          <EmptyState icon={Car} title="No sales yet" hint="When a customer buys one of your cars, the sale shows up here." />
+        </div>
+      );
+    }
+    if (filteredOrders.length === 0) {
+      return (
+        <div className="card">
+          <EmptyState icon={Search} title="No sales match your search">
+            <button type="button" onClick={() => setSearchTerm("")} className="btn btn-light">
+              Clear search
+            </button>
+          </EmptyState>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {/* Phones */}
+        <ul className="space-y-3 md:hidden">
+          {filteredOrders.map((order) => (
+            <li key={order._id} className="card p-4">
+              <div className="flex gap-3">
+                <Thumb order={order} className="h-20 w-28" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold leading-tight">{carName(order)}</p>
+                  <p className="text-xs text-gray-600">
+                    {order.carId?.year} {order.carId?.fuelType ? `· ${label(order.carId.fuelType)}` : ""}
+                  </p>
+                  <p className="mt-1 font-semibold">{formatINR(order.amount)}</p>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3 border-t border-neutral-100 pt-3">
+                <div className="min-w-0 text-xs text-gray-700">
+                  <p className="truncate font-medium text-ink">{buyerName(order)}</p>
+                  <p>{shortDate(order.createdAt)}</p>
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  <button type="button" onClick={() => setSelectedOrder(order)} className="icon-btn" aria-label={`View sale of ${carName(order)}`}>
+                    <Eye size={18} aria-hidden="true" />
+                  </button>
+                  <button type="button" onClick={() => askDelete(order)} className="icon-btn hover:!bg-red-50 hover:!text-red-700" aria-label={`Delete sale record of ${carName(order)}`}>
+                    <Trash2 size={18} aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {/* Tablet and up */}
+        <div className="hidden md:block">
+          <TableCard>
+            <thead className={THEAD_CLASS}>
+              <tr>
+                <Th>Vehicle</Th>
+                <Th>Buyer</Th>
+                <Th>Sale price</Th>
+                <Th>Sale date</Th>
+                <Th className="text-right">Actions</Th>
+              </tr>
+            </thead>
+            <tbody className={TBODY_CLASS}>
+              {filteredOrders.map((order) => (
+                <tr key={order._id} onClick={() => setSelectedOrder(order)} className="cursor-pointer transition-colors hover:bg-mist">
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-4">
+                      <Thumb order={order} />
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold">{carName(order)}</p>
+                        <p className="text-xs text-gray-600">
+                          {order.carId?.year} {order.carId?.fuelType ? `· ${label(order.carId.fuelType)}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold" aria-hidden="true">
+                        {buyerName(order).charAt(0).toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold">{buyerName(order)}</p>
+                        <p className="truncate text-xs text-gray-600">
+                          {order.customerDetails?.city ? `${order.customerDetails.city}, ${order.customerDetails.zipCode}` : order.userId?.Email}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5 font-semibold">{formatINR(order.amount)}</td>
+                  <td className="px-5 py-3.5 text-sm text-gray-700">{shortDate(order.createdAt)}</td>
+                  <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex justify-end gap-1">
+                      <button type="button" onClick={() => setSelectedOrder(order)} className="icon-btn" aria-label={`View sale of ${carName(order)}`} title="View details">
+                        <Eye size={18} aria-hidden="true" />
+                      </button>
+                      <button type="button" onClick={() => askDelete(order)} className="icon-btn hover:!bg-red-50 hover:!text-red-700" aria-label={`Delete sale record of ${carName(order)}`} title="Delete record">
+                        <Trash2 size={18} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </TableCard>
+        </div>
+      </>
+    );
+  };
 
   return (
-    <div className="bg-mist min-h-screen flex flex-col font-sans text-gray-900">
-      <Header title="Dealer Control Center" />
+    <DealerLayout>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Sold cars</h1>
+        <p className="mt-1 text-sm text-gray-600">Your sales history and buyer details.</p>
+      </div>
 
-      <div className="flex flex-1">
-        <SideBar links={DEALER_LINKS} />
-
-        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-bold mb-8">Sold Vehicles History</h1>
-
-            {/* Filters Bar */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
-                <input
-                  type="text"
-                  placeholder="Search by vehicle or buyer name..."
-                  className="w-full pl-11 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-brand/60 focus:outline-2 focus:outline-ink transition"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Inventory Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-              <table className="w-full text-left border-collapse min-w-[1000px]">
-                <thead>
-                  <tr className="bg-gray-50/50 border-b border-gray-200">
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Vehicle Details</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Buyer Info</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Sale Price</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Sale Date</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {loading ? (
-                    <tr><td colSpan="5" className="text-center py-20 text-gray-500 animate-pulse">Loading Sales History...</td></tr>
-                  ) : filteredOrders.length === 0 ? (
-                    <tr><td colSpan="5" className="text-center py-20 text-gray-500">No sold vehicles history found.</td></tr>
-                  ) : filteredOrders.map((order) => (
-                    <tr key={order._id} className="hover:bg-brand/20 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <img
-                            src={getImageUrl(order.carId?.images?.[0])}
-                            className="w-20 h-14 object-cover rounded-lg"
-                            alt={order.carId?.title || "Deleted car"}
-                          />
-                          <div>
-                            <div className="font-bold text-gray-900">{order.carId ? `${order.carId.brand} ${order.carId.model}` : "Deleted car"}</div>
-                            <div className="text-[11px] text-gray-500">{order.carId?.year} • {order.carId?.fuelType}</div>
-                            <div className="mt-1 inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700">SOLD</div>
-                          </div>
-                        </div >
-                      </td >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-brand/25 flex items-center justify-center text-ink font-bold text-xs">
-                            {order.userId?.Name?.charAt(0) || "U"}
-                          </div>
-                          <div>
-                            <div className="text-sm font-bold text-gray-900">{order.customerDetails?.fullName || order.userId?.Name || "Unknown"}</div>
-                            <div className="text-xs text-gray-500">{order.customerDetails?.city ? `${order.customerDetails.city}, ${order.customerDetails.zipCode}` : order.userId?.Email}</div>
-                            {order.customerDetails?.address && <div className="text-[10px] text-gray-500 mt-0.5 truncate max-w-[150px]">{order.customerDetails.address}</div>}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 font-bold text-sm text-gray-900">
-                        ₹{order.amount?.toLocaleString('en-IN')}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        <div className="flex items-center gap-2">
-                          <Calendar size={14} />
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button onClick={() => setSelectedOrder(order)} className="p-2 text-ink hover:bg-brand/20 rounded-lg transition"><Eye size={18} /></button>
-                          {/* Removing Delete for Sold Cars for now or keeping it? The user might want to hide history. Keeping it but warning. */}
-                          <button
-                            onClick={() => setDeleteConfirm({ show: true, id: order._id, title: `${order.carId ? `${order.carId.brand} ${order.carId.model}` : "Deleted car"} (History)` })}
-                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition opacity-50 hover:opacity-100"
-                            title="Remove Record"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr >
-                  ))}
-                </tbody >
-              </table >
-            </div >
-          </div >
-        </main >
-      </div >
-
-      {/* --- CUSTOM ALERT BOX (DELETE CONFIRMATION) --- */}
-      {
-        deleteConfirm.show && (
-          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-in zoom-in duration-200">
-              <div className="flex flex-col items-center text-center">
-                <div className="p-4 bg-red-50 text-red-600 rounded-2xl mb-4">
-                  <AlertCircle size={32} />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900">Remove Vehicle Record?</h3>
-                <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-                  You are about to delete the history of <span className="font-bold text-gray-800">{deleteConfirm.title}</span>. This data will be permanently removed.
-                </p>
-                <div className="flex gap-3 w-full mt-8">
-                  <button
-                    onClick={() => setDeleteConfirm({ show: false, id: null, title: "" })}
-                    className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleConfirmDelete}
-                    className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 shadow-lg shadow-red-200 transition"
-                  >
-                    Confirm
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-      }
-
-      {/* --- NOTIFICATION TOAST --- */}
-      {
-        notification.show && (
-          <div className={`fixed bottom-8 right-8 z-[70] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-right duration-300 ${notification.type === 'success' ? 'bg-white border-green-100 text-green-800' : 'bg-white border-red-100 text-red-800'
-            }`}>
-            {notification.type === 'success' ? <CheckCircle2 className="text-green-500" /> : <AlertCircle className="text-red-500" />}
-            <span className="font-bold text-sm">{notification.message}</span>
-          </div>
-        )
-      }
-
-      {/* --- EYE (VIEW MODAL - UPDATED WITH ORDER DETAILS) --- */}
-      {selectedOrder && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            {/* Modal Header */}
-            <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">Order Details</h2>
-                <p className="text-xs text-gray-500 font-mono mt-1">ID: {selectedOrder._id}</p>
-              </div>
-              <button aria-label="Close" onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-gray-100 rounded-full text-gray-500 transition"><X size={20} /></button>
-            </div>
-
-            <div className="p-6 space-y-8">
-              {/* SECTION 1: VEHICLE INFORMATION */}
-              <div>
-                <h3 className="flex items-center gap-2 font-bold text-gray-900 text-sm uppercase tracking-wider mb-4 border-b pb-2">
-                  <Car size={16} className="text-ink" /> Vehicle Information
-                </h3>
-                <div className="flex flex-col sm:flex-row gap-6">
-                  <img
-                    src={getImageUrl(selectedOrder.carId?.images?.[0])}
-                    className="w-full sm:w-48 h-32 object-cover rounded-xl shadow-sm border border-gray-100"
-                    alt="Car"
-                  />
-                  <div className="flex-1 space-y-3">
-                    <div>
-                      <div className="text-lg font-bold text-gray-900">{selectedOrder.carId ? `${selectedOrder.carId.brand} ${selectedOrder.carId.model}` : "Deleted car"}</div>
-                      <div className="text-sm text-gray-500">{selectedOrder.carId?.year} • {selectedOrder.carId?.fuelType}</div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-xs">
-                      <div className="bg-gray-50 p-2 rounded-lg">
-                        <span className="text-gray-500 block mb-0.5">Transmission</span>
-                        <span className="font-bold text-gray-700">{selectedOrder.carId?.transmission}</span>
-                      </div>
-                      <div className="bg-gray-50 p-2 rounded-lg">
-                        <span className="text-gray-500 block mb-0.5">Color</span>
-                        <span className="font-bold text-gray-700">{selectedOrder.carId?.color}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION 2: BUYER & SHIPPING DETAILS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="flex items-center gap-2 font-bold text-gray-900 text-sm uppercase tracking-wider mb-4 border-b pb-2">
-                    <User size={16} className="text-ink" /> Buyer Details
-                  </h3>
-                  <div className="space-y-4">
-                    <DetailBox label="Full Name" value={selectedOrder.customerDetails?.fullName || selectedOrder.userId?.Name || "N/A"} />
-                    <DetailBox label="Email Address" value={selectedOrder.userId?.Email || "N/A"} />
-                    <DetailBox label="Phone Number" value={selectedOrder.customerDetails?.phone || selectedOrder.userId?.Phone || "N/A"} />
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="flex items-center gap-2 font-bold text-gray-900 text-sm uppercase tracking-wider mb-4 border-b pb-2">
-                    <CheckCircle2 size={16} className="text-green-600" /> Shipping Address
-                  </h3>
-                  {selectedOrder.customerDetails?.address ? (
-                    <div className="bg-gray-50 p-4 rounded-xl text-sm text-gray-700 leading-relaxed border border-gray-100">
-                      <div className="font-bold mb-1">
-                        {selectedOrder.customerDetails.address}
-                      </div>
-                      <div>
-                        {selectedOrder.customerDetails.city}, {selectedOrder.customerDetails.zipCode}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-gray-500 italic text-sm">No shipping address recorded.</div>
-                  )}
-                </div>
-              </div>
-
-              {/* SECTION 3: PAYMENT INFORMATION */}
-              <div>
-                <h3 className="flex items-center gap-2 font-bold text-gray-900 text-sm uppercase tracking-wider mb-4 border-b pb-2">
-                  <div className="text-green-600 font-bold">₹</div> Payment Information
-                </h3>
-                <div className="bg-green-50/50 p-5 rounded-2xl border border-green-100 grid grid-cols-2 md:grid-cols-4 gap-6">
-                  <div>
-                    <div className="text-xs text-green-700/60 uppercase font-bold mb-1">Amount</div>
-                    <div className="text-lg font-bold text-green-800">₹{selectedOrder.amount?.toLocaleString('en-IN')}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-green-700/60 uppercase font-bold mb-1">Status</div>
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-200 text-green-800 text-xs font-bold">
-                      <CheckCircle2 size={10} /> {selectedOrder.status}
-                    </div>
-                  </div>
-                  <div className="col-span-2">
-                    <div className="text-xs text-green-700/60 uppercase font-bold mb-1">Transaction ID</div>
-                    <div className="font-mono text-sm text-green-900 truncate" title={selectedOrder.paymentDetails?.transactionId}>
-                      {selectedOrder.paymentDetails?.transactionId || "N/A"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* Summary strip */}
+      {!loading && !error && orders.length > 0 && (
+        <div className="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <StatCard title="Cars sold" value={orders.length} icon={CheckCircle2} color="purple" />
+          <StatCard title="Total revenue" value={formatINR(totalRevenue)} icon={IndianRupee} color="green" />
+          <StatCard title="Latest sale" value={shortDate(latestSale)} icon={CalendarDays} color="blue" />
         </div>
       )}
-    </div >
+
+      <div className="card mb-5 p-4">
+        <div className="relative">
+          <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" aria-hidden="true" />
+          <label htmlFor="sold-search" className="sr-only">
+            Search by car or buyer
+          </label>
+          <input
+            id="sold-search"
+            type="search"
+            placeholder="Search by car or buyer name…"
+            className="field pl-11"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {renderBody()}
+
+      {deleteConfirm.show && (
+        <ConfirmationModal
+          isOpen={deleteConfirm.show}
+          onClose={() => setDeleteConfirm({ show: false, id: null, title: "" })}
+          onConfirm={handleConfirmDelete}
+          title="Delete sale record?"
+          message={
+            <>
+              You are about to delete <span className="font-bold text-ink">{deleteConfirm.title}</span>. This can't be undone.
+            </>
+          }
+          confirmText="Delete"
+        />
+      )}
+
+      {selectedOrder && (
+        <Modal title="Order details" subtitle={`ID: ${selectedOrder._id}`} onClose={() => setSelectedOrder(null)}>
+          <div className="space-y-7 p-6">
+            {/* Vehicle */}
+            <section aria-labelledby="od-vehicle">
+              <h3 id="od-vehicle" className="mb-3 flex items-center gap-2 border-b border-neutral-200 pb-2 text-sm font-semibold">
+                <Car size={16} aria-hidden="true" /> Vehicle
+              </h3>
+              <div className="flex flex-col gap-5 sm:flex-row">
+                <div className="aspect-video w-full overflow-hidden rounded-xl bg-mist-deep sm:w-52 sm:shrink-0">
+                  {selectedOrder.carId?.images?.[0] && (
+                    <img src={getImageUrl(selectedOrder.carId.images[0])} alt="" className="h-full w-full object-cover" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-lg font-bold">{carName(selectedOrder)}</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedOrder.carId?.year} {selectedOrder.carId?.fuelType ? `· ${label(selectedOrder.carId.fuelType)}` : ""}
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <DetailBox label="Transmission" value={label(selectedOrder.carId?.transmission) || "N/A"} />
+                    <DetailBox label="Color" value={selectedOrder.carId?.color || "N/A"} />
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="grid gap-7 md:grid-cols-2">
+              {/* Buyer */}
+              <section aria-labelledby="od-buyer">
+                <h3 id="od-buyer" className="mb-3 flex items-center gap-2 border-b border-neutral-200 pb-2 text-sm font-semibold">
+                  <User size={16} aria-hidden="true" /> Buyer
+                </h3>
+                <div className="space-y-3">
+                  <DetailBox label="Full name" value={buyerName(selectedOrder)} />
+                  <DetailBox label="Email" value={selectedOrder.userId?.Email || "N/A"} />
+                  <DetailBox label="Phone" value={selectedOrder.customerDetails?.phone || selectedOrder.userId?.Phone || "N/A"} />
+                </div>
+              </section>
+
+              {/* Delivery */}
+              <section aria-labelledby="od-delivery">
+                <h3 id="od-delivery" className="mb-3 flex items-center gap-2 border-b border-neutral-200 pb-2 text-sm font-semibold">
+                  <MapPin size={16} aria-hidden="true" /> Delivery address
+                </h3>
+                {selectedOrder.customerDetails?.address ? (
+                  <div className="rounded-lg border border-neutral-200 bg-mist p-4 text-sm leading-relaxed">
+                    <p className="font-semibold">{selectedOrder.customerDetails.address}</p>
+                    <p className="text-gray-700">
+                      {selectedOrder.customerDetails.city}, {selectedOrder.customerDetails.zipCode}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-600">No delivery address recorded.</p>
+                )}
+              </section>
+            </div>
+
+            {/* Payment */}
+            <section aria-labelledby="od-payment">
+              <h3 id="od-payment" className="mb-3 flex items-center gap-2 border-b border-neutral-200 pb-2 text-sm font-semibold">
+                <CreditCard size={16} aria-hidden="true" /> Payment
+              </h3>
+              <dl className="grid grid-cols-2 gap-5 rounded-xl border border-neutral-200 bg-mist p-5 md:grid-cols-4">
+                <div>
+                  <dt className="text-xs font-medium text-gray-600">Amount</dt>
+                  <dd className="mt-1 text-lg font-bold">{formatINR(selectedOrder.amount)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium text-gray-600">Status</dt>
+                  <dd className="mt-1">
+                    <StatusBadge status={selectedOrder.status} />
+                  </dd>
+                </div>
+                <div className="col-span-2">
+                  <dt className="text-xs font-medium text-gray-600">Transaction ID</dt>
+                  <dd className="mt-1 truncate font-mono text-sm" title={selectedOrder.paymentDetails?.transactionId}>
+                    {selectedOrder.paymentDetails?.transactionId || "N/A"}
+                  </dd>
+                </div>
+              </dl>
+            </section>
+          </div>
+        </Modal>
+      )}
+    </DealerLayout>
   );
 };
 

@@ -2,22 +2,12 @@ import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useNavigate } from "react-router-dom";
-import {
-  Car,
-  Users2,
-  DollarSign,
-  Plus,
-  PhoneCall,
-  FileText,
-  CheckCircle,
-  Download,
-} from "lucide-react";
-import Header from "../../components/common/Header";
-import SideBar from "../../components/common/SideBar";
+import { Car, IndianRupee, TrendingUp, Plus, FileText, CheckCircle2, MessageSquare, Loader2 } from "lucide-react";
+import DealerLayout from "../../components/common/DealerLayout";
+import StatCard from "../../components/Dashboard/StateCard";
 import AddCarForm from "../../components/Details/AddCarForm";
 import { useToast } from "../../context/ToastContext";
 import api from "../../config/server";
-import { DEALER_LINKS } from "../../constants/Links";
 
 const DealerDashboard = () => {
   const navigate = useNavigate();
@@ -29,6 +19,7 @@ const DealerDashboard = () => {
     activeInventory: 0,
     totalEnquiries: 0
   });
+  const [statsLoaded, setStatsLoaded] = useState(false);
   const [salesData, setSalesData] = useState([]);
   const [loadingReport, setLoadingReport] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -51,10 +42,13 @@ const DealerDashboard = () => {
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
+        showToast("Couldn't load your dashboard numbers. Please refresh.", "error");
+      } finally {
+        setStatsLoaded(true);
       }
     };
     fetchData();
-  }, [refreshKey]);
+  }, [refreshKey, showToast]);
 
   const processSalesData = (orders) => {
     const lastSixMonths = [];
@@ -215,180 +209,105 @@ const DealerDashboard = () => {
     return num.toLocaleString('en-IN');
   };
 
+  // Highlights for the text summary under the chart
+  const totalSalesShown = salesData.reduce((sum, d) => sum + d.count, 0);
+  const bestCount = Math.max(...salesData.map((d) => d.count), 0);
+  const bestMonths = salesData.filter((d) => d.count === bestCount);
+  const chartMax = Math.max(...salesData.map((d) => d.count), 4);
+  const dash = <span className="inline-block h-8 w-20 animate-pulse rounded bg-mist-deep align-middle" aria-label="Loading" />;
+
   return (
     <>
-      {/* ... styles ... */}
-
-      <div className="bg-mist font-sans min-h-screen flex flex-col">
-        <Header title={"Dealer Control Center"} />
-        <div id="dashboard-layout" className="flex min-h-[calc(100vh-4rem)]">
-          <SideBar links={DEALER_LINKS} />
-
-          <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-            {/* ... Header and Description ... */}
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">
-              Dealer Dashboard
-            </h1>
-            <p className="text-gray-500 mb-8">
-              Here is a snapshot of your dealership performance and key tasks.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-
-              <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Total Inventory
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">{stats.activeInventory}</p>
-                </div>
-                <div className="p-3 bg-brand/25 rounded-full text-ink">
-                  <Car className="w-6 h-6" />
-                </div>
-              </div>
-
-              {/* <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Total Enquiries
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">{stats.totalEnquiries}</p>
-                </div>
-                <div className="p-3 bg-yellow-100 rounded-full text-yellow-600">
-                  <Users2 className="w-6 h-6" />
-                </div>
-              </div> */}
-
-              {/*Total Revenue */}
-              <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Total Revenue
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">₹{formatCurrency(stats.totalRevenue)}</p>
-                </div>
-                <div className="p-3 bg-green-100 rounded-full text-green-600">
-                  <DollarSign className="w-6 h-6" />
-                </div>
-              </div>
-
-              {/* KPI Card: Total Profit */}
-              <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Total Profit
-                  </p>
-                  <p className="text-3xl font-bold text-green-600 mt-1">₹{formatCurrency(stats.totalProfit)}</p>
-                </div>
-                <div className="p-3 bg-green-50 rounded-full text-green-500">
-                  <DollarSign className="w-6 h-6" />
-                </div>
-              </div>
-
-              {/* KPI Card 4: Cars Sold */}
-              <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Cars Sold
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">{stats.totalCarsSold}</p>
-                </div>
-                <div className="p-3 bg-red-100 rounded-full text-red-600">
-                  <CheckCircle className="w-6 h-6" />
-                </div>
-              </div>
-            </div>
-
-            {/* Main Dashboard Sections Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left 2/3: Activity & Chart */}
-              <div className="lg:col-span-2 space-y-6">
-
-                {/* Sales Chart */}
-                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 min-h-[400px] flex flex-col">
-                  <div className="flex justify-between items-center mb-8">
-                    <h2 className="text-xl font-semibold text-gray-800">
-                      Monthly Sales Performance
-                    </h2>
-                    <div className="flex items-center space-x-2 text-sm text-gray-500">
-                      <div className="w-3 h-3 bg-brand rounded-full"></div>
-                      <span>Cars Sold</span>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 flex items-end justify-between space-x-4 px-4 pb-2 border-b border-gray-100">
-                    {salesData.length > 0 ? (
-                      salesData.map((data, index) => {
-                        // Calculate height percentage, max assumed 10 for basic scaling, or dynamic
-                        const maxVal = Math.max(...salesData.map(d => d.count), 5);
-                        const height = Math.max((data.count / maxVal) * 100, 5);
-
-                        return (
-                          <div key={index} className="flex flex-col items-center flex-1 group">
-                            <div className="relative w-full flex items-end justify-center h-64">
-                              <div
-                                style={{ height: `${height}%` }}
-                                className="w-full max-w-[40px] bg-brand/25 rounded-t-lg group-hover:bg-brand transition-all duration-300 relative"
-                              >
-                                <div className="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded shadow-lg pointer-events-none whitespace-nowrap z-10">
-                                  {data.count} Sales
-                                </div>
-                              </div>
-                            </div>
-                            <span className="mt-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                              {data.month}
-                            </span>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-500">
-                        Loading chart data...
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right 1/3: Quick Actions & Inventory */}
-              <div className="lg:col-span-1 space-y-6">
-                {/* Quick Actions Card */}
-                <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                  <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                    Quick Actions
-                  </h2>
-                  <div className="space-y-3">
-                    <button onClick={() => setShowAddVehicleform(true)} className="w-full flex items-center justify-center py-3 bg-brand text-ink font-semibold rounded-xl hover:bg-brand-dark transition shadow-md shadow-black/10">
-                      <Plus className="w-5 h-5 mr-2" />
-                      Add New Vehicle{ShowAddVehicleform}
-                    </button>
-                    <button
-                      onClick={() => navigate('/dealer/enquiries')}
-                      className="w-full flex items-center justify-center py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition"
-                    >
-                      <PhoneCall className="w-5 h-5 mr-2" />
-                      Contact Next Lead
-                    </button>
-                    <button
-                      onClick={handleGenerateReport}
-                      disabled={loadingReport}
-                      className="w-full flex items-center justify-center py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {loadingReport ? (
-                        <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin mr-2"></div>
-                      ) : (
-                        <FileText className="w-5 h-5 mr-2" />
-                      )}
-
-                      {loadingReport ? 'Generating...' : 'Generate Report'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </main>
+      <DealerLayout>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Dealer dashboard</h1>
+            <p className="mt-1 text-gray-600">A snapshot of your dealership's performance and key tasks.</p>
+          </div>
+          <button type="button" onClick={() => setShowAddVehicleform(true)} className="btn btn-brand self-start sm:self-auto">
+            <Plus size={18} aria-hidden="true" /> Add vehicle
+          </button>
         </div>
-      </div>
+
+        <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard title="Vehicles in inventory" value={statsLoaded ? stats.activeInventory : dash} icon={Car} color="blue" />
+          <StatCard title="Total revenue" value={statsLoaded ? `₹${formatCurrency(stats.totalRevenue)}` : dash} icon={IndianRupee} color="green" />
+          <StatCard title="Total profit" value={statsLoaded ? `₹${formatCurrency(stats.totalProfit)}` : dash} icon={TrendingUp} color="green" />
+          <StatCard title="Cars sold" value={statsLoaded ? stats.totalCarsSold : dash} icon={CheckCircle2} color="purple" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Sales chart */}
+          <section className="card flex min-h-[380px] flex-col p-6 lg:col-span-2" aria-labelledby="sales-chart-title">
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <h2 id="sales-chart-title" className="text-lg font-semibold">
+                Monthly sales
+              </h2>
+              <span className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="h-3 w-3 rounded-full bg-brand" aria-hidden="true" /> Cars sold, last 6 months
+              </span>
+            </div>
+
+            {salesData.length > 0 ? (
+              <>
+                <div className="flex flex-1 items-end justify-between gap-3 border-b border-neutral-200 px-1 pb-0 sm:gap-5" role="img" aria-label={`Bar chart of cars sold per month. ${totalSalesShown} sold in the last six months.`}>
+                  {salesData.map((data) => {
+                    // Bar height in px so the count label can sit right on top of its bar
+                    const barHeight = Math.max(Math.round((data.count / chartMax) * 200), 6);
+                    return (
+                      <div key={data.month + data.fullDate} className="flex h-60 flex-1 flex-col items-center justify-end">
+                        <span className="mb-1 text-sm font-semibold tabular-nums">{data.count}</span>
+                        <div
+                          style={{ height: `${barHeight}px` }}
+                          className={`w-full max-w-[44px] rounded-t-md transition-all duration-300 ${data.count > 0 ? "bg-brand" : "bg-mist-deep"}`}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-2 flex justify-between gap-3 px-1 sm:gap-5" aria-hidden="true">
+                  {salesData.map((data) => (
+                    <span key={data.month + data.fullDate} className="flex-1 text-center text-xs font-medium text-gray-600">
+                      {data.month}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-5 text-sm text-gray-700">
+                  {totalSalesShown === 0
+                    ? "No sales in the last six months yet."
+                    : `${totalSalesShown} ${totalSalesShown === 1 ? "car" : "cars"} sold in the last six months. ${
+                        bestMonths.length === 1
+                          ? `Best month: ${bestMonths[0].month} (${bestMonths[0].count}).`
+                          : `Best months: ${bestMonths.map((d) => d.month).join(", ")} (${bestMonths[0].count} each).`
+                      }`}
+                </p>
+              </>
+            ) : (
+              <div className="flex-1 animate-pulse rounded-lg bg-mist" aria-label="Loading chart" />
+            )}
+          </section>
+
+          {/* Quick actions */}
+          <section className="card p-6" aria-labelledby="quick-actions-title">
+            <h2 id="quick-actions-title" className="mb-4 text-lg font-semibold">
+              Quick actions
+            </h2>
+            <div className="space-y-3">
+              <button type="button" onClick={() => setShowAddVehicleform(true)} className="btn btn-brand w-full">
+                <Plus size={18} aria-hidden="true" /> Add new vehicle
+              </button>
+              <button type="button" onClick={() => navigate("/dealer/enquiries")} className="btn btn-light w-full">
+                <MessageSquare size={18} aria-hidden="true" /> View enquiries
+              </button>
+              <button type="button" onClick={handleGenerateReport} disabled={loadingReport} className="btn btn-light w-full">
+                {loadingReport ? <Loader2 size={18} className="animate-spin" aria-hidden="true" /> : <FileText size={18} aria-hidden="true" />}
+                {loadingReport ? "Generating…" : "Generate report"}
+              </button>
+            </div>
+          </section>
+        </div>
+      </DealerLayout>
+
       {ShowAddVehicleform && (
         <AddCarForm
           onClose={() => setShowAddVehicleform(false)}

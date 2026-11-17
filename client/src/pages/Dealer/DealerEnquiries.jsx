@@ -1,183 +1,295 @@
-import React, { useState, useEffect } from "react";
-import { 
-  Mail, Phone, MessageSquare, Trash2, 
-  Search, Calendar, ExternalLink, User 
-} from "lucide-react";
-import Header from "../../components/common/Header";
-import SideBar from "../../components/common/SideBar";
-import api from "../../config/server";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { Mail, Phone, Trash2, Search, MessageSquare, RotateCcw } from "lucide-react";
+import DealerLayout from "../../components/common/DealerLayout";
+import TableCard, { Th, THEAD_CLASS, TBODY_CLASS } from "../../components/common/TableCard";
+import EmptyState from "../../components/common/EmptyState";
+import Modal from "../../components/common/Modal";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 import { useToast } from "../../context/ToastContext";
-import { DEALER_LINKS } from "../../constants/Links";
+import api from "../../config/server";
+import { timeAgo } from "../../utils/format";
+
+const formatDate = (d) => new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+
+const LONG_MESSAGE = 90;
+const vehicleName = (item) => (item.carId ? `${item.carId.brand} ${item.carId.model}` : "Removed vehicle");
+const mailto = (item) =>
+  `mailto:${item.email}?subject=${encodeURIComponent(`Re: your enquiry about the ${vehicleName(item)}`)}`;
+
+// Name with email and phone underneath, each icon in the same fixed-size box
+const ContactLines = ({ item }) => (
+  <div className="min-w-0">
+    <p className="truncate font-semibold">{item.name}</p>
+    <p className="mt-1 flex items-center gap-2 text-xs text-gray-700">
+      <Mail size={14} aria-hidden="true" />
+      <span className="truncate">{item.email}</span>
+    </p>
+    {item.phone && (
+      <p className="mt-0.5 flex items-center gap-2 text-xs text-gray-700">
+        <Phone size={14} aria-hidden="true" />
+        <a href={`tel:${item.phone}`} className="underline-offset-2 hover:underline">
+          {item.phone}
+        </a>
+      </p>
+    )}
+  </div>
+);
+
+const Avatar = ({ name }) => (
+  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand font-bold" aria-hidden="true">
+    {name?.charAt(0)?.toUpperCase() || "?"}
+  </span>
+);
 
 const DealerEnquiries = () => {
   const { showToast } = useToast();
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [reading, setReading] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, name: "" });
 
-  useEffect(() => {
-    const fetchEnquiries = async () => {
-      try {
-        const res = await api.get("/dealer/get-enquiries");
-        setEnquiries(res.data.enquiries);
-      } catch (err) {
-        console.error("Error fetching enquiries:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEnquiries();
+  const fetchEnquiries = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await api.get("/dealer/get-enquiries");
+      setEnquiries(Array.isArray(res.data.enquiries) ? res.data.enquiries : []);
+    } catch (err) {
+      console.error("Error fetching enquiries:", err);
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const filteredEnquiries = (Array.isArray(enquiries) ? enquiries : []).filter((item) =>
-    item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.carId?.model?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    fetchEnquiries();
+  }, [fetchEnquiries]);
 
-  const handleDelete = async (enquiryId)=>{
+  const filtered = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return enquiries;
+    return enquiries.filter(
+      (item) =>
+        item.name?.toLowerCase().includes(q) ||
+        item.carId?.model?.toLowerCase().includes(q) ||
+        item.carId?.brand?.toLowerCase().includes(q)
+    );
+  }, [enquiries, searchTerm]);
+
+  const handleDelete = async () => {
+    const { id } = deleteConfirm;
     try {
-      const res = await api.delete(`/dealer/delete-enquiry/${enquiryId}`);
-      
+      const res = await api.delete(`/dealer/delete-enquiry/${id}`);
       if (res.data.success) {
-        setEnquiries((prev) => prev.filter((item) => item._id !== enquiryId));
+        setEnquiries((prev) => prev.filter((item) => item._id !== id));
+        setReading((cur) => (cur?._id === id ? null : cur));
+        showToast("Enquiry deleted");
       }
     } catch (err) {
       console.error("Error deleting enquiry:", err);
       showToast("Failed to delete enquiry. Please try again.", "error");
+    } finally {
+      setDeleteConfirm({ show: false, id: null, name: "" });
     }
-  }
+  };
+
+  const askDelete = (item) => setDeleteConfirm({ show: true, id: item._id, name: item.name });
+
+  // Message text, shortened with a "Read more" button when long
+  const renderMessage = (item) => {
+    const text = item.message || "No message provided.";
+    const long = text.length > LONG_MESSAGE;
+    return (
+      <div className="flex items-start gap-2">
+        <MessageSquare size={14} className="mt-1 text-gray-500" aria-hidden="true" />
+        <div className="min-w-0 text-sm text-gray-700">
+          <p className="line-clamp-2 leading-relaxed">{text}</p>
+          {long && (
+            <button type="button" onClick={() => setReading(item)} className="mt-1 text-xs font-semibold underline underline-offset-2 hover:text-ink">
+              Read more
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderBody = () => {
+    if (loading) return <div className="card animate-pulse p-16 text-center text-gray-600">Loading enquiries…</div>;
+    if (error) {
+      return (
+        <div className="card">
+          <EmptyState icon={RotateCcw} title="Couldn't load your enquiries" hint="Please check your connection and try again.">
+            <button type="button" onClick={fetchEnquiries} className="btn btn-brand">
+              Try again
+            </button>
+          </EmptyState>
+        </div>
+      );
+    }
+    if (enquiries.length === 0) {
+      return (
+        <div className="card">
+          <EmptyState icon={MessageSquare} title="No enquiries yet" hint="They'll show up here when a customer messages you about one of your cars." />
+        </div>
+      );
+    }
+    if (filtered.length === 0) {
+      return (
+        <div className="card">
+          <EmptyState icon={Search} title="No enquiries match your search">
+            <button type="button" onClick={() => setSearchTerm("")} className="btn btn-light">
+              Clear search
+            </button>
+          </EmptyState>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {/* Phones */}
+        <ul className="space-y-3 md:hidden">
+          {filtered.map((item) => (
+            <li key={item._id} className="card p-4">
+              <div className="flex items-start gap-3">
+                <Avatar name={item.name} />
+                <ContactLines item={item} />
+              </div>
+              <p className="mt-3 text-sm">
+                <span className="text-gray-600">About: </span>
+                <span className="font-semibold">{vehicleName(item)}</span>
+              </p>
+              <div className="mt-2">
+                {renderMessage(item)}
+              </div>
+              <p className="mt-3 text-xs text-gray-600">
+                {formatDate(item.createdAt)} · {timeAgo(item.createdAt)}
+              </p>
+              <div className="mt-3 flex gap-2 border-t border-neutral-100 pt-3">
+                <a href={mailto(item)} className="btn btn-brand btn-sm flex-1">
+                  <Mail size={16} aria-hidden="true" /> Reply by email
+                </a>
+                <button type="button" onClick={() => askDelete(item)} className="icon-btn hover:!bg-red-50 hover:!text-red-700" aria-label={`Delete enquiry from ${item.name}`}>
+                  <Trash2 size={18} aria-hidden="true" />
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {/* Tablet and up */}
+        <div className="hidden md:block">
+          <TableCard>
+            <thead className={THEAD_CLASS}>
+              <tr>
+                <Th>Customer</Th>
+                <Th>Vehicle</Th>
+                <Th>Message</Th>
+                <Th>Received</Th>
+                <Th className="text-right">Actions</Th>
+              </tr>
+            </thead>
+            <tbody className={TBODY_CLASS}>
+              {filtered.map((item) => (
+                <tr key={item._id} className="align-top transition-colors hover:bg-mist">
+                  <td className="px-5 py-4">
+                    <div className="flex items-start gap-3">
+                      <Avatar name={item.name} />
+                      <ContactLines item={item} />
+                    </div>
+                  </td>
+                  <td className="px-5 py-4 text-sm font-semibold">{vehicleName(item)}</td>
+                  <td className="max-w-xs px-5 py-4">
+                    {renderMessage(item)}
+                  </td>
+                  <td className="px-5 py-4 text-sm">
+                    <p>{formatDate(item.createdAt)}</p>
+                    <p className="text-xs text-gray-600">{timeAgo(item.createdAt)}</p>
+                  </td>
+                  <td className="px-5 py-4">
+                    <div className="flex items-center justify-end gap-2">
+                      <a href={mailto(item)} className="btn btn-brand btn-sm">
+                        <Mail size={16} aria-hidden="true" /> Reply
+                      </a>
+                      <button type="button" onClick={() => askDelete(item)} className="icon-btn hover:!bg-red-50 hover:!text-red-700" aria-label={`Delete enquiry from ${item.name}`} title="Delete">
+                        <Trash2 size={18} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </TableCard>
+        </div>
+      </>
+    );
+  };
+
   return (
-    <div className="bg-mist min-h-screen flex flex-col font-sans text-gray-900">
-      <Header title="Dealer Control Center" />
-      
-      <div className="flex flex-1">
-        <SideBar links={DEALER_LINKS}/>
+    <DealerLayout>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Customer enquiries</h1>
+        <p className="mt-1 text-sm text-gray-600">
+          {loading ? "Loading…" : `${enquiries.length} ${enquiries.length === 1 ? "enquiry" : "enquiries"} from potential buyers.`}
+        </p>
+      </div>
 
-        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
-            
-            {/* Page Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-              <div>
-                <h1 className="text-2xl font-bold">Customer Enquiries</h1>
-                <p className="text-sm text-gray-500">You have {enquiries.length} total enquiries from potential buyers.</p>
-              </div>
-            </div>
+      <div className="card mb-5 p-4">
+        <div className="relative">
+          <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" aria-hidden="true" />
+          <label htmlFor="enq-search" className="sr-only">
+            Search by customer or vehicle
+          </label>
+          <input
+            id="enq-search"
+            type="search"
+            placeholder="Search by customer or vehicle…"
+            className="field pl-11"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
 
-            {/* Search Bar */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6">
-              <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Search by customer name or vehicle..." 
-                  className="w-full pl-11 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-brand/60 focus:outline-2 focus:outline-ink transition"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
+      {renderBody()}
 
-            {/* Enquiries Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[1000px]">
-                  <thead>
-                    <tr className="bg-gray-50/50 border-b border-gray-200">
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Interested Vehicle</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Message</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date Received</th>
-                      <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {loading ? (
-                       <tr><td colSpan="5" className="text-center py-20 text-gray-500 animate-pulse">Loading Enquiries...</td></tr>
-                    ) : filteredEnquiries.length === 0 ? (
-                        <tr><td colSpan="5" className="text-center py-20 text-gray-500">No enquiries found.</td></tr>
-                    ) : filteredEnquiries.map((item) => (
-                      <tr key={item._id} className="hover:bg-brand/20 transition-colors group">
-                        
-                        {/* 1. Customer Details */}
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-brand/25 text-ink rounded-full flex items-center justify-center shrink-0">
-                                <User size={20} />
-                            </div>
-                            <div>
-                              <div className="font-bold text-gray-900">{item.name}</div>
-                              <div className="flex flex-col gap-0.5 mt-1">
-                                <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
-                                  <Mail size={12} /> {item.email}
-                                </div>
-                                <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
-                                  <Phone size={12} /> {item.phone}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </td>
+      {deleteConfirm.show && (
+        <ConfirmationModal
+          isOpen={deleteConfirm.show}
+          onClose={() => setDeleteConfirm({ show: false, id: null, name: "" })}
+          onConfirm={handleDelete}
+          title="Delete enquiry?"
+          message={
+            <>
+              You are about to delete the enquiry from <span className="font-bold text-ink">{deleteConfirm.name}</span>. This can't be undone.
+            </>
+          }
+          confirmText="Delete"
+        />
+      )}
 
-                        {/* 2. Vehicle Info (Populated carId) */}
-                        <td className="px-6 py-4">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-bold text-gray-800">
-                              {item.carId?.brand} {item.carId?.model}
-                            </span>
-                            <span className="text-[10px] text-ink font-bold uppercase mt-1 tracking-tight">
-                              ID: {item.carId?._id.slice(-6)}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* 3. Message */}
-                        <td className="px-6 py-4">
-                          <div className="flex items-start gap-2 max-w-xs">
-                            <MessageSquare size={14} className="text-gray-500 mt-1 shrink-0" />
-                            <p className="text-xs text-gray-600 leading-relaxed italic">
-                              "{item.message || "No message provided."}"
-                            </p>
-                          </div>
-                        </td>
-
-                        {/* 4. Timestamp */}
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2 text-xs text-gray-600 font-medium">
-                            <Calendar size={14} className="text-gray-500" />
-                            {new Date(item.createdAt).toLocaleDateString('en-IN', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
-                            })}
-                          </div>
-                        </td>
-
-                        {/* 5. Actions */}
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            <a 
-                                href={`mailto:${item.email}`}
-                                className="p-2 text-gray-500 hover:text-ink hover:bg-brand/20 rounded-lg transition-colors"
-                                title="Reply via Email"
-                            >
-                              <Mail size={18} />
-                            </a>
-                            <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+      {reading && (
+        <Modal title={reading.name} subtitle={`About the ${vehicleName(reading)} · ${timeAgo(reading.createdAt)}`} onClose={() => setReading(null)} size="max-w-lg">
+          <div className="space-y-5 p-6">
+            <p className="whitespace-pre-line leading-relaxed">{reading.message}</p>
+            <div className="flex flex-wrap gap-3 border-t border-neutral-200 pt-5">
+              <a href={mailto(reading)} className="btn btn-brand">
+                <Mail size={18} aria-hidden="true" /> Reply by email
+              </a>
+              {reading.phone && (
+                <a href={`tel:${reading.phone}`} className="btn btn-light">
+                  <Phone size={18} aria-hidden="true" /> Call
+                </a>
+              )}
             </div>
           </div>
-        </main>
-      </div>
-    </div>
+        </Modal>
+      )}
+    </DealerLayout>
   );
 };
 

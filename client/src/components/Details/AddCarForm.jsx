@@ -1,24 +1,33 @@
 import React, { useEffect, useRef, useState } from "react";
-import { X, UploadCloud } from "lucide-react";
+import { X, UploadCloud, Loader2 } from "lucide-react";
 import api from "../../config/server";
 import { useToast } from "../../context/ToastContext";
-import useModal from "../../hooks/useModal";
+import Modal from "../common/Modal";
 
 const MAX_IMAGES = 10;
 const MAX_IMAGE_MB = 5;
 const MIN_YEAR = 1990;
 const MAX_YEAR = new Date().getFullYear() + 1;
 
-const inputClass =
-  "w-full px-4 py-3 border border-gray-300 rounded-xl bg-white outline-none focus:ring-2 focus:ring-brand/60 focus:border-ink transition";
-
-const Field = ({ label, htmlFor, children }) => (
+const Field = ({ label, htmlFor, hint, children }) => (
   <div>
-    <label htmlFor={htmlFor} className="block text-sm font-medium text-gray-700 mb-1">
+    <label htmlFor={htmlFor} className="label">
       {label}
+      <span className="text-red-700" aria-hidden="true">
+        {" "}
+        *
+      </span>
     </label>
     {children}
+    {hint && <p className="mt-1 text-xs text-gray-600">{hint}</p>}
   </div>
+);
+
+const Section = ({ title, children }) => (
+  <fieldset className="space-y-4">
+    <legend className="mb-1 border-b border-neutral-200 pb-2 text-sm font-semibold w-full">{title}</legend>
+    {children}
+  </fieldset>
 );
 
 const AddCarForm = ({ onClose, onAdded }) => {
@@ -38,9 +47,8 @@ const AddCarForm = ({ onClose, onAdded }) => {
     description: "",
   });
   const [images, setImages] = useState([]); // [{ file, url }]
+  const [photoError, setPhotoError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  useModal(true, submitting ? undefined : onClose);
 
   // Free preview URLs only when the form closes
   const imagesRef = useRef(images);
@@ -56,15 +64,13 @@ const AddCarForm = ({ onClose, onAdded }) => {
     e.target.value = ""; // allow picking the same file again after removing it
 
     const tooBig = picked.filter((f) => f.size > MAX_IMAGE_MB * 1024 * 1024);
-    if (tooBig.length) {
-      showToast(`${tooBig.map((f) => f.name).join(", ")} is larger than ${MAX_IMAGE_MB} MB`, "error");
-    }
-
     const valid = picked.filter((f) => f.size <= MAX_IMAGE_MB * 1024 * 1024);
     const room = MAX_IMAGES - images.length;
-    if (valid.length > room) {
-      showToast(`You can upload up to ${MAX_IMAGES} images`, "error");
-    }
+
+    const problems = [];
+    if (tooBig.length) problems.push(`${tooBig.map((f) => f.name).join(", ")} is larger than ${MAX_IMAGE_MB} MB.`);
+    if (valid.length > room) problems.push(`You can upload up to ${MAX_IMAGES} photos.`);
+    setPhotoError(problems.join(" "));
 
     setImages([...images, ...valid.slice(0, Math.max(room, 0)).map((file) => ({ file, url: URL.createObjectURL(file) }))]);
   };
@@ -77,9 +83,12 @@ const AddCarForm = ({ onClose, onAdded }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (images.length === 0) {
-      showToast("Please add at least one photo", "error");
+      setPhotoError("Please add at least one photo.");
+      // The photo section can be below the fold in the dialog, so bring the message into view
+      requestAnimationFrame(() => document.getElementById("photo-error")?.scrollIntoView({ block: "center", behavior: "smooth" }));
       return;
     }
+    setPhotoError("");
 
     const data = new FormData();
     Object.entries(form).forEach(([key, value]) => data.append(key, value));
@@ -100,131 +109,107 @@ const AddCarForm = ({ onClose, onAdded }) => {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-gray-900/75 flex items-center justify-center p-4"
-      onClick={submitting ? undefined : onClose}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="add-car-title"
-        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white z-10">
-          <h2 id="add-car-title" className="text-2xl font-bold">
-            Add New Vehicle
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={submitting}
-            className="p-2 rounded-full text-gray-500 hover:text-gray-600 hover:bg-gray-100"
-            aria-label="Close"
-          >
-            <X />
-          </button>
-        </div>
+    <Modal title="Add new vehicle" subtitle="Fields marked * are required" onClose={onClose} locked={submitting} titleId="add-car-title">
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-7 p-6">
+          <Section title="Basics">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <Field label="Listing title" htmlFor="car-title">
+                  <input id="car-title" name="title" value={form.title} onChange={update} required placeholder="e.g. Well-kept family SUV" className="field" />
+                </Field>
+              </div>
+              <Field label="Brand" htmlFor="car-brand">
+                <input id="car-brand" name="brand" value={form.brand} onChange={update} required placeholder="e.g. Toyota" className="field" />
+              </Field>
+              <Field label="Model" htmlFor="car-model">
+                <input id="car-model" name="model" value={form.model} onChange={update} required placeholder="e.g. Fortuner" className="field" />
+              </Field>
+              <Field label="Year" htmlFor="car-year">
+                <input
+                  id="car-year"
+                  type="number"
+                  name="year"
+                  value={form.year}
+                  onChange={update}
+                  required
+                  min={MIN_YEAR}
+                  max={MAX_YEAR}
+                  placeholder={String(MAX_YEAR - 1)}
+                  className="field"
+                />
+              </Field>
+              <Field label="Color" htmlFor="car-color">
+                <input id="car-color" name="color" value={form.color} onChange={update} required placeholder="e.g. Pearl White" className="field" />
+              </Field>
+            </div>
+          </Section>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Listing title" htmlFor="car-title">
-              <input id="car-title" name="title" value={form.title} onChange={update} required placeholder="e.g. Well-kept family SUV" className={inputClass} />
-            </Field>
-            <Field label="Brand" htmlFor="car-brand">
-              <input id="car-brand" name="brand" value={form.brand} onChange={update} required placeholder="e.g. Toyota" className={inputClass} />
-            </Field>
-            <Field label="Model" htmlFor="car-model">
-              <input id="car-model" name="model" value={form.model} onChange={update} required placeholder="e.g. Fortuner" className={inputClass} />
-            </Field>
-            <Field label="Year" htmlFor="car-year">
-              <input
-                id="car-year"
-                type="number"
-                name="year"
-                value={form.year}
-                onChange={update}
-                required
-                min={MIN_YEAR}
-                max={MAX_YEAR}
-                placeholder={String(MAX_YEAR - 1)}
-                className={inputClass}
-              />
-            </Field>
-            <Field label="Your price (₹)" htmlFor="car-price">
-              <input
-                id="car-price"
-                type="number"
-                name="price"
-                value={form.price}
-                onChange={update}
-                required
-                min="100000"
-                step="1000"
-                placeholder="e.g. 850000"
-                className={inputClass}
-              />
-            </Field>
-            <Field label="Mileage (km)" htmlFor="car-mileage">
-              <input
-                id="car-mileage"
-                type="number"
-                name="mileage"
-                value={form.mileage}
-                onChange={update}
-                required
-                min="0"
-                placeholder="e.g. 35000"
-                className={inputClass}
-              />
-            </Field>
-            <Field label="Category" htmlFor="car-category">
-              <select id="car-category" name="category" value={form.category} onChange={update} className={inputClass}>
-                <option value="SUVs">SUV</option>
-                <option value="SEDAN">Sedan</option>
-                <option value="HATCHBACK">Hatchback</option>
-                <option value="ELECTRIC">Electric</option>
-              </select>
-            </Field>
-            <Field label="Fuel type" htmlFor="car-fuel">
-              <select id="car-fuel" name="fuelType" value={form.fuelType} onChange={update} className={inputClass}>
-                <option value="PETROL">Petrol</option>
-                <option value="DIESEL">Diesel</option>
-                <option value="ELECTRIC">Electric</option>
-                <option value="HYBRID">Hybrid</option>
-              </select>
-            </Field>
-            <Field label="Transmission" htmlFor="car-transmission">
-              <select id="car-transmission" name="transmission" value={form.transmission} onChange={update} className={inputClass}>
-                <option value="MANUAL">Manual</option>
-                <option value="AUTOMATIC">Automatic</option>
-              </select>
-            </Field>
-            <Field label="Color" htmlFor="car-color">
-              <input id="car-color" name="color" value={form.color} onChange={update} required placeholder="e.g. Pearl White" className={inputClass} />
-            </Field>
-          </div>
+          <Section title="Price and specifications">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <Field label="Your price (₹)" htmlFor="car-price">
+                <input
+                  id="car-price"
+                  type="number"
+                  name="price"
+                  value={form.price}
+                  onChange={update}
+                  required
+                  min="100000"
+                  step="1000"
+                  placeholder="e.g. 850000"
+                  className="field"
+                />
+              </Field>
+              <Field label="Mileage (km)" htmlFor="car-mileage" hint="Odometer reading">
+                <input
+                  id="car-mileage"
+                  type="number"
+                  name="mileage"
+                  value={form.mileage}
+                  onChange={update}
+                  required
+                  min="0"
+                  placeholder="e.g. 35000"
+                  className="field"
+                />
+              </Field>
+              <Field label="Category" htmlFor="car-category">
+                <select id="car-category" name="category" value={form.category} onChange={update} className="field cursor-pointer">
+                  <option value="SUVs">SUV</option>
+                  <option value="SEDAN">Sedan</option>
+                  <option value="HATCHBACK">Hatchback</option>
+                  <option value="ELECTRIC">Electric</option>
+                </select>
+              </Field>
+              <Field label="Fuel type" htmlFor="car-fuel">
+                <select id="car-fuel" name="fuelType" value={form.fuelType} onChange={update} className="field cursor-pointer">
+                  <option value="PETROL">Petrol</option>
+                  <option value="DIESEL">Diesel</option>
+                  <option value="ELECTRIC">Electric</option>
+                  <option value="HYBRID">Hybrid</option>
+                </select>
+              </Field>
+              <Field label="Transmission" htmlFor="car-transmission">
+                <select id="car-transmission" name="transmission" value={form.transmission} onChange={update} className="field cursor-pointer">
+                  <option value="MANUAL">Manual</option>
+                  <option value="AUTOMATIC">Automatic</option>
+                </select>
+              </Field>
+            </div>
+          </Section>
 
-          <Field label="Description" htmlFor="car-description">
-            <textarea
-              id="car-description"
-              name="description"
-              value={form.description}
-              onChange={update}
-              required
-              rows="4"
-              placeholder="Condition, service history, extras…"
-              className={inputClass}
-            />
-          </Field>
-
-          <div>
-            <span className="block text-sm font-medium text-gray-700 mb-1">
-              Photos ({images.length}/{MAX_IMAGES}, max {MAX_IMAGE_MB} MB each)
-            </span>
-            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-ink hover:bg-brand/20 transition text-gray-500">
-              <UploadCloud aria-hidden="true" />
-              <span className="text-sm font-medium">Click to add photos</span>
+          <Section title="Photos">
+            <label
+              className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 text-gray-700 transition focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-ink hover:border-ink hover:bg-mist ${
+                photoError ? "border-red-600" : "border-neutral-300"
+              } ${images.length >= MAX_IMAGES ? "pointer-events-none opacity-60" : ""}`}
+            >
+              <UploadCloud size={26} aria-hidden="true" />
+              <span className="text-sm font-semibold">Click to add photos</span>
+              <span className="text-xs text-gray-600">
+                {images.length}/{MAX_IMAGES} added · max {MAX_IMAGE_MB} MB each · the first photo is the cover
+              </span>
               <input
                 type="file"
                 multiple
@@ -232,38 +217,67 @@ const AddCarForm = ({ onClose, onAdded }) => {
                 onChange={handleImageUpload}
                 disabled={images.length >= MAX_IMAGES}
                 className="sr-only"
+                aria-describedby={photoError ? "photo-error" : undefined}
               />
             </label>
+            {photoError && (
+              <p id="photo-error" role="alert" className="text-sm font-medium text-red-700">
+                {photoError}
+              </p>
+            )}
 
             {images.length > 0 && (
-              <ul className="mt-3 grid grid-cols-3 sm:grid-cols-5 gap-2">
+              <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
                 {images.map((img, index) => (
-                  <li key={img.url} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200">
-                    <img src={img.url} alt={img.file.name} className="w-full h-full object-cover" />
+                  <li key={img.url} className="relative aspect-square overflow-hidden rounded-lg border border-neutral-200">
+                    <img src={img.url} alt={img.file.name} className="h-full w-full object-cover" />
+                    {index === 0 && <span className="badge badge-brand absolute bottom-1 left-1">Cover</span>}
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
-                      className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white hover:bg-black/80"
+                      className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black focus-visible:outline-3 focus-visible:outline-brand"
                       aria-label={`Remove ${img.file.name}`}
                     >
-                      <X size={12} />
+                      <X size={14} aria-hidden="true" />
                     </button>
                   </li>
                 ))}
               </ul>
             )}
-          </div>
+          </Section>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full py-3.5 bg-brand text-ink rounded-xl font-bold hover:bg-brand-dark disabled:opacity-60 disabled:cursor-not-allowed transition"
-          >
-            {submitting ? "Uploading…" : "Add Vehicle"}
+          <Section title="Description">
+            <Field label="About this vehicle" htmlFor="car-description">
+              <textarea
+                id="car-description"
+                name="description"
+                value={form.description}
+                onChange={update}
+                required
+                rows="4"
+                placeholder="Condition, service history, extras…"
+                className="field"
+              />
+            </Field>
+          </Section>
+        </div>
+
+        <div className="sticky bottom-0 flex justify-end gap-3 border-t border-neutral-200 bg-white px-6 py-4">
+          <button type="button" onClick={onClose} disabled={submitting} className="btn btn-light">
+            Cancel
           </button>
-        </form>
-      </div>
-    </div>
+          <button type="submit" disabled={submitting} className="btn btn-brand min-w-36">
+            {submitting ? (
+              <>
+                <Loader2 size={18} className="animate-spin" aria-hidden="true" /> Uploading…
+              </>
+            ) : (
+              "Add vehicle"
+            )}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 };
 

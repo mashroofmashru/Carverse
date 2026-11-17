@@ -8,7 +8,7 @@ import api from "../../config/server";
 import { ADMIN_LINKS } from "../../constants/Links";
 
 const AdminSettings = () => {
-  const { user, login } = useAuth();
+  const { user, update } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
 
   const [name, setName] = useState("");
@@ -45,8 +45,8 @@ const AdminSettings = () => {
       });
       if (res.data.success) {
         showToast(res.data.message||"updated successfully!","success");
-        if (res.data.token) login(res.data.data, res.data.token);
-        login(res.data.user);
+        // Merge into the current user. login() without a token would sign the admin out.
+        update({ ...user, ...res.data.user });
       }
     } catch (err) {
       showToast(err.response?.data?.message || "Error updating server data","error");

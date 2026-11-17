@@ -1,58 +1,62 @@
-import React, { useState, useEffect } from "react";
-import useModal from "../../hooks/useModal";
-import {
-  Car, Search, Eye, Trash2,
-  Fuel, Settings2, Gauge, Palette, X,
-  AlertCircle, CheckCircle2
-} from "lucide-react";
-import Header from "../../components/common/Header";
-import SideBar from "../../components/common/SideBar";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { Car, Search, Eye, Trash2, Fuel, Settings2, Plus, RotateCcw } from "lucide-react";
+import DealerLayout from "../../components/common/DealerLayout";
+import TableCard, { Th, THEAD_CLASS, TBODY_CLASS } from "../../components/common/TableCard";
+import StatusBadge from "../../components/common/StatusBadge";
+import EmptyState from "../../components/common/EmptyState";
+import Modal from "../../components/common/Modal";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 import DetailBox from "../../components/Dashboard/DetailBox";
+import AddCarForm from "../../components/Details/AddCarForm";
+import { useToast } from "../../context/ToastContext";
 import api from "../../config/server";
-import { DEALER_LINKS } from "../../constants/Links";
 import { getImageUrl } from "../../config/imageUrl";
+import { formatINR, label } from "../../utils/format";
+
+const CATEGORIES = ["SUVs", "SEDAN", "HATCHBACK", "ELECTRIC"];
+
+const Thumb = ({ car, className = "h-14 w-20" }) => (
+  <span className={`block shrink-0 overflow-hidden rounded-lg bg-mist-deep ${className}`}>
+    {car.images?.[0] && <img src={getImageUrl(car.images[0])} alt="" className="h-full w-full object-cover" />}
+  </span>
+);
 
 const DealerInventory = () => {
+  const { showToast } = useToast();
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all"); // New Status Filter
+  const [statusFilter, setStatusFilter] = useState("all");
   const [selectedCar, setSelectedCar] = useState(null);
-
-  // --- Alert & Notification States ---
+  const [showAdd, setShowAdd] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, id: null, title: "" });
-  useModal(!!selectedCar, () => setSelectedCar(null));
-  useModal(deleteConfirm.show, () => setDeleteConfirm((prev) => ({ ...prev, show: false })));
-  const [notification, setNotification] = useState({ show: false, message: "", type: "success" });
 
-  useEffect(() => {
-    fetchInventory();
-  }, []);
-
-  const fetchInventory = async () => {
+  const fetchInventory = useCallback(async () => {
+    setLoading(true);
+    setError(false);
     try {
       const res = await api.get("/dealer/get-inventory");
-      setInventory(res.data.cars);
+      setInventory(Array.isArray(res.data.cars) ? res.data.cars : []);
     } catch (err) {
       console.error("Error fetching inventory:", err);
+      setError(true);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // --- TOAST NOTIFICATION HELPER ---
-  const showToast = (message, type = "success") => {
-    setNotification({ show: true, message, type });
-    setTimeout(() => setNotification({ show: false, message: "", type: "success" }), 3000);
-  };
+  useEffect(() => {
+    fetchInventory();
+  }, [fetchInventory]);
 
-  // --- OPERATION: CONFIRMED DELETE ---
   const handleConfirmDelete = async () => {
     try {
       await api.delete(`/dealer/delete-car/${deleteConfirm.id}`);
-      setInventory(inventory.filter(car => car._id !== deleteConfirm.id));
-      showToast("Vehicle deleted successfully", "success");
+      setInventory((prev) => prev.filter((car) => car._id !== deleteConfirm.id));
+      setSelectedCar((cur) => (cur?._id === deleteConfirm.id ? null : cur));
+      showToast("Vehicle deleted");
     } catch (err) {
       showToast(err.response?.data?.message || "Failed to delete vehicle", "error");
     } finally {
@@ -60,196 +64,273 @@ const DealerInventory = () => {
     }
   };
 
-  // Filter Logic
-  const filteredCars = (Array.isArray(inventory) ? inventory : []).filter((car) => {
-    const matchesSearch =
-      car.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      car.model?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || car.category === categoryFilter;
-    const matchesStatus = statusFilter === "all"
-      ? true
-      : statusFilter === "sold"
-        ? car.status === "SOLD"
-        : car.status !== "SOLD";
+  const filteredCars = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return inventory.filter((car) => {
+      const matchesSearch = !q || car.brand?.toLowerCase().includes(q) || car.model?.toLowerCase().includes(q);
+      const matchesCategory = categoryFilter === "all" || car.category === categoryFilter;
+      const matchesStatus =
+        statusFilter === "all" ? true : statusFilter === "sold" ? car.status === "SOLD" : car.status !== "SOLD";
+      return matchesSearch && matchesCategory && matchesStatus;
+    });
+  }, [inventory, searchTerm, categoryFilter, statusFilter]);
 
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
+  const soldCount = inventory.filter((c) => c.status === "SOLD").length;
+  const hasFilters = searchTerm.trim() !== "" || categoryFilter !== "all" || statusFilter !== "all";
+  const clearFilters = () => {
+    setSearchTerm("");
+    setCategoryFilter("all");
+    setStatusFilter("all");
+  };
+  const askDelete = (car) => setDeleteConfirm({ show: true, id: car._id, title: `${car.brand} ${car.model}` });
+
+  const subtitle = loading
+    ? "Loading…"
+    : `${inventory.length - soldCount} available · ${soldCount} sold`;
+
+  const renderBody = () => {
+    if (loading) {
+      return <div className="card animate-pulse p-16 text-center text-gray-600">Loading inventory…</div>;
+    }
+    if (error) {
+      return (
+        <div className="card">
+          <EmptyState icon={RotateCcw} title="Couldn't load your inventory" hint="Please check your connection and try again.">
+            <button type="button" onClick={fetchInventory} className="btn btn-brand">
+              Try again
+            </button>
+          </EmptyState>
+        </div>
+      );
+    }
+    if (inventory.length === 0) {
+      return (
+        <div className="card">
+          <EmptyState icon={Car} title="No vehicles yet" hint="Add your first vehicle and it will show up on the marketplace right away.">
+            <button type="button" onClick={() => setShowAdd(true)} className="btn btn-brand">
+              <Plus size={18} aria-hidden="true" /> Add vehicle
+            </button>
+          </EmptyState>
+        </div>
+      );
+    }
+    if (filteredCars.length === 0) {
+      return (
+        <div className="card">
+          <EmptyState icon={Search} title="No vehicles match your filters">
+            {hasFilters && (
+              <button type="button" onClick={clearFilters} className="btn btn-light">
+                Clear filters
+              </button>
+            )}
+          </EmptyState>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {/* Phones: one card per vehicle */}
+        <ul className="space-y-3 md:hidden">
+          {filteredCars.map((car) => (
+            <li key={car._id} className="card p-4">
+              <div className="flex gap-3">
+                <Thumb car={car} className="h-20 w-28" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold leading-tight">
+                    {car.brand} {car.model}
+                  </p>
+                  <p className="text-xs text-gray-600">{car.year}</p>
+                  <p className="mt-1 font-semibold">{formatINR(car.price)}</p>
+                  <div className="mt-1">
+                    <StatusBadge status={car.status === "SOLD" ? "SOLD" : "AVAILABLE"} />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex items-center justify-between border-t border-neutral-100 pt-3">
+                <p className="flex items-center gap-3 text-xs text-gray-700">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Fuel size={14} aria-hidden="true" /> {label(car.fuelType)}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Settings2 size={14} aria-hidden="true" /> {label(car.transmission)}
+                  </span>
+                </p>
+                <div className="flex gap-1">
+                  <button type="button" onClick={() => setSelectedCar(car)} className="icon-btn" aria-label={`View ${car.brand} ${car.model}`}>
+                    <Eye size={18} aria-hidden="true" />
+                  </button>
+                  <button type="button" onClick={() => askDelete(car)} className="icon-btn hover:!bg-red-50 hover:!text-red-700" aria-label={`Delete ${car.brand} ${car.model}`}>
+                    <Trash2 size={18} aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {/* Tablet and up: table */}
+        <div className="hidden md:block">
+          <TableCard>
+            <thead className={THEAD_CLASS}>
+              <tr>
+                <Th>Vehicle</Th>
+                <Th>Specs</Th>
+                <Th>Price</Th>
+                <Th>Status</Th>
+                <Th className="text-right">Actions</Th>
+              </tr>
+            </thead>
+            <tbody className={TBODY_CLASS}>
+              {filteredCars.map((car) => (
+                <tr key={car._id} onClick={() => setSelectedCar(car)} className="cursor-pointer transition-colors hover:bg-mist">
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-4">
+                      <Thumb car={car} />
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold">
+                          {car.brand} {car.model}
+                        </p>
+                        <p className="text-xs text-gray-600">{car.year}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5 text-sm text-gray-700">
+                    <p className="flex items-center gap-2">
+                      <Fuel size={14} aria-hidden="true" /> {label(car.fuelType)}
+                    </p>
+                    <p className="mt-1 flex items-center gap-2">
+                      <Settings2 size={14} aria-hidden="true" /> {label(car.transmission)}
+                    </p>
+                  </td>
+                  <td className="px-5 py-3.5 font-semibold">{formatINR(car.price)}</td>
+                  <td className="px-5 py-3.5">
+                    <StatusBadge status={car.status === "SOLD" ? "SOLD" : "AVAILABLE"} />
+                  </td>
+                  <td className="px-5 py-3.5" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex justify-end gap-1">
+                      <button type="button" onClick={() => setSelectedCar(car)} className="icon-btn" aria-label={`View ${car.brand} ${car.model}`} title="View details">
+                        <Eye size={18} aria-hidden="true" />
+                      </button>
+                      <button type="button" onClick={() => askDelete(car)} className="icon-btn hover:!bg-red-50 hover:!text-red-700" aria-label={`Delete ${car.brand} ${car.model}`} title="Delete">
+                        <Trash2 size={18} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </TableCard>
+        </div>
+      </>
+    );
+  };
 
   return (
-    <div className="bg-mist min-h-screen flex flex-col font-sans text-gray-900">
-      <Header title="Dealer Control Center" />
-
-      <div className="flex flex-1">
-        <SideBar links={DEALER_LINKS} />
-
-        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-bold mb-8">Master Inventory</h1>
-
-            {/* Filters Bar */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" size={18} />
-                <input
-                  type="text"
-                  placeholder="Search brand or model..."
-                  className="w-full pl-11 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-brand/60 focus:outline-2 focus:outline-ink transition"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <select
-                className="bg-gray-50 border-none rounded-xl px-4 py-2 text-sm font-semibold outline-none cursor-pointer"
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-              >
-                <option value="all">All Categories</option>
-                <option value="SUVs">SUVs</option>
-                <option value="SEDAN">SEDAN</option>
-                <option value="HATCHBACK">HATCHBACK</option>
-                <option value="ELECTRIC">ELECTRIC</option>
-              </select>
-
-              {/* Status Filter */}
-              <select
-                className="bg-gray-50 border-none rounded-xl px-4 py-2 text-sm font-semibold outline-none cursor-pointer"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">All Status</option>
-                <option value="available">Available</option>
-                <option value="sold">Sold</option>
-              </select>
-            </div>
-
-            {/* Inventory Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-              <table className="w-full text-left border-collapse min-w-[1000px]">
-                <thead>
-                  <tr className="bg-gray-50/50 border-b border-gray-200">
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Vehicle Details</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Specs</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Pricing</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {loading ? (
-                    <tr><td colSpan="5" className="text-center py-20 text-gray-500 animate-pulse">Loading Inventory...</td></tr>
-                  ) : filteredCars.map((car) => (
-                    <tr key={car._id} className="hover:bg-brand/20 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <img
-                            src={getImageUrl(car.images?.[0])}
-                            className="w-20 h-14 object-cover rounded-lg"
-                            alt={car.title}
-                          />
-                          <div>
-                            <div className="font-bold text-gray-900">{car.brand} {car.model}</div>
-                            <div className="text-[11px] text-gray-500">{car.year}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-xs">
-                        <div className="flex items-center gap-1"><Fuel size={12} /> {car.fuelType}</div>
-                        <div className="flex items-center gap-1 mt-1"><Settings2 size={12} /> {car.transmission}</div>
-                      </td>
-                      <td className="px-6 py-4 font-bold text-sm">
-                        ₹{car.price.toLocaleString('en-IN')}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${car.status === 'SOLD' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                          {car.status === 'SOLD' ? 'SOLD' : 'AVAILABLE'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button onClick={() => setSelectedCar(car)} className="p-2 text-ink hover:bg-brand/20 rounded-lg transition"><Eye size={18} /></button>
-                          {/* UPDATED DELETE BUTTON */}
-                          <button
-                            onClick={() => setDeleteConfirm({ show: true, id: car._id, title: `${car.brand} ${car.model}` })}
-                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </main>
+    <DealerLayout>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Inventory</h1>
+          <p className="mt-1 text-sm text-gray-600">{subtitle}</p>
+        </div>
+        <button type="button" onClick={() => setShowAdd(true)} className="btn btn-brand self-start sm:self-auto">
+          <Plus size={18} aria-hidden="true" /> Add vehicle
+        </button>
       </div>
 
-      {/* --- CUSTOM ALERT BOX (DELETE CONFIRMATION) --- */}
+      {/* Filters */}
+      <div className="card mb-5 flex flex-col gap-3 p-4 md:flex-row">
+        <div className="relative flex-1">
+          <Search size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" aria-hidden="true" />
+          <label htmlFor="inv-search" className="sr-only">
+            Search brand or model
+          </label>
+          <input
+            id="inv-search"
+            type="search"
+            placeholder="Search brand or model…"
+            className="field pl-11"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="md:w-52">
+          <label htmlFor="inv-category" className="sr-only">
+            Category
+          </label>
+          <select id="inv-category" className="field cursor-pointer font-medium" value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+            <option value="all">All categories</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {label(c)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="md:w-44">
+          <label htmlFor="inv-status" className="sr-only">
+            Status
+          </label>
+          <select id="inv-status" className="field cursor-pointer font-medium" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="all">All status</option>
+            <option value="available">Available</option>
+            <option value="sold">Sold</option>
+          </select>
+        </div>
+      </div>
+
+      {renderBody()}
+
       {deleteConfirm.show && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-in zoom-in duration-200">
-            <div className="flex flex-col items-center text-center">
-              <div className="p-4 bg-red-50 text-red-600 rounded-2xl mb-4">
-                <AlertCircle size={32} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900">Remove Vehicle?</h3>
-              <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-                You are about to delete <span className="font-bold text-gray-800">{deleteConfirm.title}</span>. This data will be permanently removed from the server.
-              </p>
-              <div className="flex gap-3 w-full mt-8">
-                <button
-                  onClick={() => setDeleteConfirm({ show: false, id: null, title: "" })}
-                  className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirmDelete}
-                  className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 shadow-lg shadow-red-200 transition"
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ConfirmationModal
+          isOpen={deleteConfirm.show}
+          onClose={() => setDeleteConfirm({ show: false, id: null, title: "" })}
+          onConfirm={handleConfirmDelete}
+          title="Remove vehicle?"
+          message={
+            <>
+              You are about to delete <span className="font-bold text-ink">{deleteConfirm.title}</span>. It will be permanently removed.
+            </>
+          }
+          confirmText="Delete"
+        />
       )}
 
-      {/* --- NOTIFICATION TOAST --- */}
-      {notification.show && (
-        <div className={`fixed bottom-8 right-8 z-[70] flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-right duration-300 ${notification.type === 'success' ? 'bg-white border-green-100 text-green-800' : 'bg-white border-red-100 text-red-800'
-          }`}>
-          {notification.type === 'success' ? <CheckCircle2 className="text-green-500" /> : <AlertCircle className="text-red-500" />}
-          <span className="font-bold text-sm">{notification.message}</span>
-        </div>
-      )}
-
-      {/* --- EYE (VIEW MODAL) --- */}
       {selectedCar && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="p-6 border-b flex justify-between items-center sticky top-0 bg-white">
-              <h2 className="text-xl font-bold">{selectedCar.brand} {selectedCar.model}</h2>
-              <button aria-label="Close" onClick={() => setSelectedCar(null)} className="p-2 hover:bg-gray-100 rounded-full"><X /></button>
+        <Modal
+          title={`${selectedCar.brand} ${selectedCar.model}`}
+          subtitle={selectedCar.title}
+          onClose={() => setSelectedCar(null)}
+        >
+          <div className="p-6">
+            <div className="mb-6 aspect-video overflow-hidden rounded-xl bg-mist-deep">
+              {selectedCar.images?.[0] && (
+                <img src={getImageUrl(selectedCar.images[0])} alt={selectedCar.title || "Vehicle"} className="h-full w-full object-cover" />
+              )}
             </div>
-            <div className="p-6">
-              <img src={getImageUrl(selectedCar.images?.[0])} className="w-full h-64 object-cover rounded-2xl mb-6 shadow-md" alt="Car" />
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-                <DetailBox label="Year" value={selectedCar.year} />
-                <DetailBox label="Fuel" value={selectedCar.fuelType} />
-                <DetailBox label="Transmission" value={selectedCar.transmission} />
-                <DetailBox label="Mileage" value={`${selectedCar.mileage} KM/L`} />
-                <DetailBox label="Color" value={selectedCar.color} />
-                <DetailBox label="Category" value={selectedCar.category} />
-              </div>
-              <h3 className="font-bold text-gray-500 uppercase text-[10px] tracking-widest mb-2">Description</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">{selectedCar.description}</p>
+
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <p className="text-2xl font-bold">{formatINR(selectedCar.price)}</p>
+              <StatusBadge status={selectedCar.status === "SOLD" ? "SOLD" : "AVAILABLE"} />
             </div>
+
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <DetailBox label="Year" value={selectedCar.year} />
+              <DetailBox label="Fuel" value={label(selectedCar.fuelType)} />
+              <DetailBox label="Transmission" value={label(selectedCar.transmission)} />
+              <DetailBox label="Mileage" value={`${Number(selectedCar.mileage).toLocaleString("en-IN")} km`} />
+              <DetailBox label="Color" value={selectedCar.color} />
+              <DetailBox label="Category" value={label(selectedCar.category)} />
+            </div>
+
+            <h3 className="mb-2 text-sm font-semibold">Description</h3>
+            <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700">{selectedCar.description}</p>
           </div>
-        </div>
+        </Modal>
       )}
-    </div>
+
+      {showAdd && <AddCarForm onClose={() => setShowAdd(false)} onAdded={fetchInventory} />}
+    </DealerLayout>
   );
 };
 
