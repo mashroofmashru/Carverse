@@ -57,8 +57,7 @@ module.exports = {
     getAllUsers: async (req, res) => {
         try {
 
-            const user = await User.find();
-            console.log(user)
+            const user = await User.find().select("-Password");
             res.json({
                 success: true,
                 user,
@@ -205,7 +204,7 @@ module.exports = {
                 id,
                 { status: status },
                 { new: true, runValidators: true }
-            );
+            ).select("-Password");
 
             if (!updatedUser) {
                 return res.status(404).json({
